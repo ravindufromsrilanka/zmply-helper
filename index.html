@@ -1,0 +1,799 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en" data-theme="cupcake">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zmply Helper - Professional Productivity Suite</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <style>
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .ad-slot {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        #editor-container {
+            height: 350px;
+            background: white;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        .sticky-note {
+            cursor: grab;
+            transition: all 0.2s;
+        }
+
+        .column {
+            min-height: 300px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+
+        <aside class="w-full md:w-72 bg-white shadow-2xl p-6 flex flex-col border-r border-slate-200 z-50">
+            <div class="mb-8 text-center">
+                <h1 class="text-3xl font-black text-primary italic tracking-tighter uppercase">ZMPLY <span
+                        class="text-secondary">PRO</span></h1>
+                <div class="badge badge-outline badge-xs opacity-50 font-bold">V 2.0 GLOBAL</div>
+            </div>
+
+            <div id="user-profile-area" class="bg-slate-100 rounded-2xl p-4 mb-6 text-center border border-slate-200">
+                <div class="avatar placeholder mb-2">
+                    <div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span>
+                    </div>
+                </div>
+                <h3 class="font-bold text-sm">Guest User</h3>
+                <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2">Login with
+                    Google</button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto">
+                <ul class="menu p-0 gap-2">
+                    <li><button id="btn-task" onclick="switchTab('task')"
+                            class="nav-btn p-4 rounded-2xl font-bold bg-primary text-white w-full text-left">📋 Task
+                            Tracker</button></li>
+                    <li><button id="btn-notes" onclick="switchTab('notes')"
+                            class="nav-btn p-4 rounded-2xl font-bold text-slate-600 w-full text-left">📝 Zmply
+                            Notes</button></li>
+                    <li><button id="btn-reminders" onclick="switchTab('reminders')"
+                            class="nav-btn p-4 rounded-2xl font-bold text-slate-600 w-full text-left">🔔
+                            Reminders</button></li>
+                    <li><button id="btn-pricing" onclick="switchTab('pricing')"
+                            class="nav-btn p-4 rounded-2xl font-bold text-warning italic w-full text-left">⭐ PRO
+                            Features</button></li>
+                </ul>
+            </nav>
+
+            <div class="ad-slot h-40 rounded-2xl mt-6 mb-4">ADVERTISEMENT<br>(300 x 250)</div>
+
+            <div class="text-[10px] font-bold opacity-30 flex justify-around border-t pt-4">
+                <a href="#" class="hover:underline">Privacy</a>
+                <a href="#" class="hover:underline">Terms</a>
+                <a href="#" class="hover:underline">Support</a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 lg:p-12">
+            <div class="ad-slot w-full h-20 rounded-2xl mb-8">TOP BANNER AD (Responsive AdSense Slot)</div>
+
+            <section id="app-pricing" class="tab-content">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">Scale Your Productivity</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                        <div class="card bg-white border-2 border-slate-200 p-8 shadow-sm">
+                            <h3 class="text-xl font-bold mb-2">Basic</h3>
+                            <div class="text-4xl font-black mb-6">$0</div>
+                            <ul class="text-left space-y-3 mb-8 text-sm">
+                                <li>✅ Local Storage</li>
+                                <li>✅ Basic Tasks & Notes</li>
+                                <li class="text-slate-300">❌ WhatsApp Alerts</li>
+                            </ul>
+                            <button class="btn btn-outline btn-disabled">Current Plan</button>
+                        </div>
+                        <div class="card bg-white border-4 border-primary p-8 shadow-2xl relative">
+                            <div class="badge badge-primary absolute -top-3 right-5 font-bold">BEST VALUE</div>
+                            <h3 class="text-xl font-bold mb-2 text-primary">Pro Business</h3>
+                            <div class="text-4xl font-black mb-6">$4.99</div>
+                            <ul class="text-left space-y-3 mb-8 text-sm">
+                                <li>🚀 <b>Cloud Sync:</b> Access anywhere</li>
+                                <li>📱 <b>WhatsApp Alerts:</b> Direct to phone</li>
+                                <li>🚫 <b>Zero Ads:</b> Clean experience</li>
+                            </ul>
+                            <button class="btn btn-primary text-white font-bold">GET PRO NOW</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="app-task" class="tab-content active">
+                <h2 class="text-3xl font-black text-slate-800 mb-8">Task Tracker</h2>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="taskTitle" placeholder="Task Name"
+                            class="input input-bordered w-full font-bold" />
+                        <input type="date" id="dateInput" class="input input-bordered w-full" />
+                    </div>
+                    <button onclick="addTask()" class="btn btn-primary w-full font-black text-white">ADD TASK</button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-100 p-4 rounded-2xl">
+                        <h3 class="font-black mb-4 text-error">📌 To-Do</h3>
+                        <div id="todo" class="column flex flex-col gap-4"></div>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-2xl">
+                        <h3 class="font-black mb-4 text-warning">⏳ In Progress</h3>
+                        <div id="in-progress" class="column flex flex-col gap-4"></div>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-2xl">
+                        <h3 class="font-black mb-4 text-success">✅ Completed</h3>
+                        <div id="completed" class="column flex flex-col gap-4"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="app-notes" class="tab-content">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-black text-slate-800">Zmply Notes</h2>
+                    <button onclick="saveNote()" class="btn btn-secondary text-white font-bold px-8">SAVE NOTE</button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div class="lg:col-span-3">
+                        <input type="text" id="noteTitle" placeholder="Note Title..."
+                            class="input input-bordered w-full mb-4 font-bold text-lg" />
+                        <div id="editor-container"></div>
+                    </div>
+                    <div class="lg:col-span-1">
+                        <h3 class="font-black mb-4 opacity-50 text-sm uppercase">Saved Notes</h3>
+                        <div id="notes-list" class="flex flex-col gap-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="app-reminders" class="tab-content">
+                <h2 class="text-3xl font-black text-slate-800 mb-8">Reminders</h2>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="remTitle" placeholder="Meeting Title"
+                            class="input input-bordered w-full font-bold" />
+                        <div class="flex gap-2"><input type="date" id="remDate"
+                                class="input input-bordered w-full" /><input type="time" id="remTime"
+                                class="input input-bordered w-full" /></div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl mb-4 text-sm font-bold">
+                        Remind me before:
+                        <select id="remOffset" class="select select-bordered select-sm ml-2">
+                            <option value="15">15 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="60">1 Hour</option>
+                        </select>
+                    </div>
+                    <button onclick="addReminder()" class="btn btn-accent w-full font-black text-white">SET
+                        REMINDER</button>
+                </div>
+                <div id="reminders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- DB SETUP ---
+        const db = new Dexie("ZmplyProDB");
+        db.version(1).stores({ tasks: '++id, status, subTasks', notes: '++id, title, content, date', reminders: '++id, title, remindTime, status' });
+        let quill;
+
+        // --- TAB SYSTEM ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+            document.getElementById('app-' + tab).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('bg-primary', 'text-white'); b.classList.add('text-slate-600'); });
+            const activeBtn = document.getElementById('btn-' + tab);
+            if (activeBtn) { activeBtn.classList.remove('text-slate-600'); activeBtn.classList.add('bg-primary', 'text-white'); }
+            if (tab === 'notes' && !quill) initQuill();
+            if (tab === 'notes') renderNotes();
+            if (tab === 'task') renderTasks();
+            if (tab === 'reminders') renderReminders();
+        }
+
+        function initQuill() { quill = new Quill('#editor-container', { theme: 'snow', modules: { toolbar: [[{ header: [1, 2, false] }], ['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']] } }); }
+
+        // --- TASKS ---
+        async function addTask() { const t = document.getElementById('taskTitle').value; if (!t) return; await db.tasks.add({ title: t, status: 'todo', subTasks: [] }); document.getElementById('taskTitle').value = ''; renderTasks(); }
+        async function renderTasks() {
+            const all = await db.tasks.toArray();['todo', 'in-progress', 'completed'].forEach(c => document.getElementById(c).innerHTML = '');
+            all.forEach(task => { const card = document.createElement('div'); card.dataset.id = task.id; card.className = "sticky-note bg-white p-4 rounded-xl shadow-sm border-t-4 " + (task.status === 'todo' ? 'border-error' : (task.status === 'in-progress' ? 'border-warning' : 'border-success')); card.innerHTML = `<div class="flex justify-between items-start font-bold text-sm">${task.title} <button onclick="deleteTask(${task.id})" class="text-error">×</button></div>`; document.getElementById(task.status).appendChild(card); });
+        }
+        async function deleteTask(id) { await db.tasks.delete(id); renderTasks(); }
+
+        // --- NOTES ---
+        async function saveNote() { const title = document.getElementById('noteTitle').value; if (!title) return; await db.notes.add({ title, content: quill.root.innerHTML, date: new Date().toLocaleString() }); document.getElementById('noteTitle').value = ''; quill.setContents([]); renderNotes(); }
+        async function renderNotes() { const notes = await db.notes.reverse().toArray(); const list = document.getElementById('notes-list'); list.innerHTML = ''; notes.forEach(n => { const d = document.createElement('div'); d.className = "bg-white p-3 rounded-xl shadow-sm border border-slate-200 cursor-pointer text-sm font-bold flex justify-between"; d.innerHTML = `<span onclick="loadNote(${n.id})">${n.title}</span> <button onclick="deleteNote(${n.id})" class="text-error">×</button>`; list.appendChild(d); }); }
+        async function loadNote(id) { const n = await db.notes.get(id); document.getElementById('noteTitle').value = n.title; quill.root.innerHTML = n.content; }
+        async function deleteNote(id) { await db.notes.delete(id); renderNotes(); }
+
+        // --- REMINDERS ---
+        async function addReminder() { const title = document.getElementById('remTitle').value; const date = document.getElementById('remDate').value; const time = document.getElementById('remTime').value; const offset = parseInt(document.getElementById('remOffset').value); if (!title || !date || !time) return; const mTime = new Date(`${date}T${time}`).getTime(); const rTime = mTime - (offset * 60000); await db.reminders.add({ title, meetingTime: mTime, remindTime: rTime, status: 'pending' }); renderReminders(); }
+        async function renderReminders() { const items = await db.reminders.toArray(); const list = document.getElementById('reminders-list'); list.innerHTML = ''; items.forEach(rem => { const d = document.createElement('div'); d.className = "card bg-white p-4 shadow-sm border-l-4 " + (rem.status === 'done' ? 'border-success' : 'border-accent'); d.innerHTML = `<h3 class="font-bold">${rem.title}</h3><p class="text-[10px] opacity-50">${new Date(rem.meetingTime).toLocaleString()}</p>`; list.appendChild(d); }); }
+
+        // --- NOTIFICATIONS ---
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        setInterval(async () => { const now = Date.now(); const pending = await db.reminders.where('status').equals('pending').toArray(); pending.forEach(async (rem) => { if (now >= rem.remindTime) { await db.reminders.update(rem.id, { status: 'done' }); if (Notification.permission === "granted") new Notification("🔔 ZMPLY REMINDER", { body: rem.title }); Swal.fire({ title: 'Reminder!', text: rem.title, icon: 'info' }); renderReminders(); } }); }, 5000);
+
+        // --- SORTABLE ---
+        ['todo', 'in-progress', 'completed'].forEach(id => { new Sortable(document.getElementById(id), { group: 'tasks', animation: 200, onEnd: async (e) => { await db.tasks.update(parseInt(e.item.dataset.id), { status: e.to.id }); renderTasks(); } }); });
+
+        document.addEventListener('DOMContentLoaded', () => switchTab('task'));
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPqRaDKDT01TGpfzUcEJvfXoQq4bSujNI",
+            authDomain: "zmply-pro.firebaseapp.com",
+            projectId: "zmply-pro",
+            storageBucket: "zmply-pro.firebasestorage.app",
+            messagingSenderId: "567607135632",
+            appId: "1:567607135632:web:ecb7d61ad576c282523715",
+            measurementId: "G-LLWCD6TNVB"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        window.loginWithGoogle = async () => {
+            try {
+                await signInWithPopup(auth, provider);
+                Swal.fire({ title: 'Welcome!', text: 'You are now a PRO member!', icon: 'success', timer: 2000 });
+            } catch (error) {
+                Swal.fire('Login Failed', 'Please check your Firebase Auth settings.', 'error');
+            }
+        };
+
+        window.logoutUser = () => { signOut(auth); };
+
+        onAuthStateChanged(auth, (user) => {
+            const userArea = document.getElementById('user-profile-area');
+            if (user) {
+                userArea.innerHTML = `
+                    <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
+                    <h3 class="font-bold text-sm">${user.displayName}</h3>
+                    <p class="text-[9px] text-primary font-black mb-2 uppercase tracking-widest">PRO MEMBER</p>
+                    <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full">Logout</button>
+                `;
+            } else {
+                userArea.innerHTML = `
+                    <div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div>
+                    <h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3>
+                    <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
+                `;
+            }
+        });
+    </script>
+</body>
+
+=======
+<!DOCTYPE html>
+<html lang="en" data-theme="cupcake">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zmply Helper - V1.2</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <style>
+        .column {
+            min-height: 400px;
+        }
+
+        .sticky-note {
+            cursor: grab;
+            transition: all 0.2s;
+        }
+
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+            }
+        }
+
+        /* Editor Container Fix */
+        #editor-container {
+            height: 350px;
+            background: white;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        .ql-toolbar {
+            border-radius: 1rem 1rem 0 0;
+            background: #f8fafc;
+            border-color: #e2e8f0 !important;
+        }
+
+        .ql-container {
+            border-color: #e2e8f0 !important;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        /* Ensure smooth switching */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="bg-base-200">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+
+        <aside
+            class="sidebar w-full md:w-64 bg-base-100 shadow-xl p-6 flex flex-col border-r border-base-300 font-sans">
+            <div class="mb-10 text-center">
+                <h1 class="text-2xl font-black text-primary italic tracking-tighter uppercase">ZMPLY <span
+                        class="text-secondary">HELPER</span></h1>
+                <p class="text-[10px] font-bold opacity-40">DASHBOARD V1.2</p>
+            </div>
+
+            <nav class="flex-1">
+                <ul class="menu p-0 gap-3">
+                    <li>
+                        <button id="btn-task" onclick="switchTab('task')"
+                            class="nav-btn flex gap-3 p-4 rounded-2xl font-bold bg-primary text-white w-full">
+                            📋 Task Tracker
+                        </button>
+                    </li>
+                    <li>
+                        <button id="btn-notes" onclick="switchTab('notes')"
+                            class="nav-btn flex gap-3 p-4 rounded-2xl font-bold hover:bg-base-200 w-full text-slate-600">
+                            📝 Zmply Notes
+                        </button>
+                    </li>
+                    <li>
+                        <button id="btn-notes" onclick="switchTab('reminders')"
+                            class="nav-btn flex gap-3 p-4 rounded-2xl font-bold hover:bg-base-200 w-full text-slate-600">
+                            📝 Zmply Reminders
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-10">
+
+            <section id="app-task" class="tab-content active">
+                <header class="mb-6">
+                    <h2 class="text-3xl font-black text-slate-800">Task Tracker</h2>
+                </header>
+
+                <div class="bg-base-100 p-8 rounded-[2rem] shadow-sm border border-base-300 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="taskTitle" placeholder="Task Name"
+                            class="input input-bordered w-full font-bold" />
+                        <input type="date" id="dateInput" class="input input-bordered w-full" />
+                    </div>
+                    <button onclick="addTask()" class="btn btn-primary w-full font-black">ADD TASK</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card bg-slate-100/50 border-2 border-dashed border-slate-300 p-4">
+                        <h2 class="card-title text-error font-black uppercase mb-4 px-2">📌 To-Do</h2>
+                        <div id="todo" class="column flex flex-col gap-4"></div>
+                    </div>
+                    <div class="card bg-slate-100/50 border-2 border-dashed border-slate-300 p-4">
+                        <h2 class="card-title text-warning font-black uppercase mb-4 px-2">⏳ In Progress</h2>
+                        <div id="in-progress" class="column flex flex-col gap-4"></div>
+                    </div>
+                    <div class="card bg-slate-100/50 border-2 border-dashed border-slate-300 p-4">
+                        <h2 class="card-title text-success font-black uppercase mb-4 px-2">✅ Completed</h2>
+                        <div id="completed" class="column flex flex-col gap-4"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="app-notes" class="tab-content">
+                <header class="mb-6 flex justify-between items-center">
+                    <h2 class="text-3xl font-black text-slate-800">Zmply Notes</h2>
+                    <button onclick="saveNote()" class="btn btn-secondary px-10 font-black text-white">SAVE</button>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div class="lg:col-span-3">
+                        <input type="text" id="noteTitle" placeholder="Note Title..."
+                            class="input input-bordered w-full mb-4 font-black text-xl border-slate-300" />
+                        <div id="editor-container"></div>
+                    </div>
+                    <div class="lg:col-span-1">
+                        <h3 class="font-black text-lg mb-4">📁 SAVED</h3>
+                        <div id="notes-list" class="flex flex-col gap-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="app-reminders" class="tab-content">
+                <header class="mb-6">
+                    <h2 class="text-3xl font-black text-slate-800">Zmply Reminders</h2>
+                </header>
+
+                <div class="bg-base-100 p-8 rounded-[2rem] shadow-sm border border-base-300 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="remTitle" placeholder="Meeting Title"
+                            class="input input-bordered w-full font-bold" />
+                        <div class="flex gap-2">
+                            <input type="date" id="remDate" class="input input-bordered w-full" />
+                            <input type="time" id="remTime" class="input input-bordered w-full" />
+                        </div>
+                    </div>
+                    <textarea id="remDesc" placeholder="Meeting Description..."
+                        class="textarea textarea-bordered w-full h-20 mb-4"></textarea>
+
+                    <div class="flex flex-col md:flex-row gap-4 items-center bg-slate-50 p-4 rounded-2xl mb-4">
+                        <span class="font-bold text-sm">Remind me before:</span>
+                        <select id="remOffset" class="select select-bordered w-full md:w-auto font-bold">
+                            <option value="15">15 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="60">1 Hour</option>
+                            <option value="120">2 Hours</option>
+                            <option value="1440">24 Hours</option>
+                        </select>
+                    </div>
+                    <button onclick="addReminder()" class="btn btn-accent w-full font-black text-white">SET
+                        REMINDER</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reminders-list">
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- DB ---
+        const db = new Dexie("ZmplyHelperV2");
+        db.version(1).stores({
+            tasks: '++id, status, subTasks',
+            notes: '++id, title, content, date'
+        });
+
+        // --- GLOBAL EDITOR ---
+        let quill;
+
+        // --- TAB SWITCHER (FIXED) ---
+        function switchTab(tab) {
+            // Hide all sections
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+            // Show selected section
+            document.getElementById('app-' + tab).classList.add('active');
+
+            // Button styling
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('bg-primary', 'text-white');
+                b.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById('btn-' + tab);
+            activeBtn.classList.remove('text-slate-600');
+            activeBtn.classList.add('bg-primary', 'text-white');
+
+            // Specific module loading
+            if (tab === 'notes') {
+                if (!quill) initQuill();
+                renderNotes();
+            } else {
+                renderTasks();
+            }
+        }
+
+        // Initialize Quill Editor only when needed
+        function initQuill() {
+            quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: { toolbar: [[{ header: [1, 2, false] }], ['bold', 'italic', 'underline', 'strike'], [{ list: 'ordered' }, { list: 'bullet' }], [{ color: [] }, { background: [] }], ['clean']] }
+            });
+        }
+
+        // --- TASK LOGIC (SHORTENED FOR STABILITY) ---
+        async function addTask() {
+            const t = document.getElementById('taskTitle').value;
+            if (!t) return;
+            await db.tasks.add({ title: t, status: 'todo', subTasks: [] });
+            document.getElementById('taskTitle').value = '';
+            renderTasks();
+        }
+
+        async function renderTasks() {
+            const all = await db.tasks.toArray();
+            ['todo', 'in-progress', 'completed'].forEach(c => document.getElementById(c).innerHTML = '');
+            all.forEach(task => {
+                const card = document.createElement('div');
+                card.dataset.id = task.id;
+                card.className = "sticky-note bg-white p-4 rounded-2xl shadow border-t-4 " + (task.status === 'todo' ? 'border-error' : (task.status === 'in-progress' ? 'border-warning' : 'border-success'));
+                card.innerHTML = `<h3 class="font-bold">${task.title}</h3><div class="flex gap-2 mt-4 text-[10px] uppercase font-bold text-slate-400">Status: ${task.status}</div>`;
+                document.getElementById(task.status).appendChild(card);
+            });
+        }
+
+        // --- NOTES LOGIC ---
+        async function saveNote() {
+            const title = document.getElementById('noteTitle').value;
+            if (!title || !quill) return;
+            await db.notes.add({ title, content: quill.root.innerHTML, date: new Date().toLocaleString() });
+            document.getElementById('noteTitle').value = '';
+            quill.setContents([]);
+            renderNotes();
+        }
+
+        async function renderNotes() {
+            const notes = await db.notes.reverse().toArray();
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+
+            notes.forEach(n => {
+                const d = document.createElement('div');
+                d.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:border-secondary transition-all group relative";
+
+                // Note eka click kalama load wenawa
+                d.onclick = () => {
+                    document.getElementById('noteTitle').value = n.title;
+                    quill.root.innerHTML = n.content;
+                };
+
+                d.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div class="flex-1 truncate">
+                    <h4 class="font-bold text-sm truncate pr-6">${n.title}</h4>
+                    <p class="text-[9px] opacity-40 mt-1 uppercase font-bold">${n.date.split(',')[0]}</p>
+                </div>
+                <button onclick="confirmDeleteNote(event, ${n.id})" class="text-error hover:scale-110 transition p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+                list.appendChild(d);
+            });
+        }
+
+        async function confirmDeleteNote(event, id) {
+            event.stopPropagation(); // Note eka load wena eka nawaththanawa delete button eka click kalama
+
+            Swal.fire({
+                title: 'Sure da machan?',
+                text: "Meka remove kaloth ayeth ganna ba!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ayin karanna!',
+                cancelButtonText: 'Epa epa',
+                customClass: {
+                    confirmButton: 'swal2-confirm', // Oya asai kiwwa static style eka
+                    cancelButton: 'swal2-cancel'
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await db.notes.delete(id);
+                    renderNotes(); // List eka refresh karanawa
+
+                    // Editor eka clear karanawa delet karapu note ekama thiyenawa nan
+                    document.getElementById('noteTitle').value = '';
+                    quill.setContents([]);
+
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Note eka ayin kala.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+
+        // SORTABLE INIT
+        ['todo', 'in-progress', 'completed'].forEach(id => {
+            new Sortable(document.getElementById(id), {
+                group: 'tasks', animation: 200,
+                onEnd: async (e) => {
+                    await db.tasks.update(parseInt(e.item.dataset.id), { status: e.to.id });
+                    renderTasks();
+                }
+            });
+        });
+
+        // Initialize Task Tracker by default
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('task');
+        });
+
+        // 1. Database update (version eka 3 karanna)
+        const db2 = new Dexie("ZmplyHelperV3");
+        db2.version(1).stores({
+            tasks: '++id, status, subTasks',
+            notes: '++id, title, content, date',
+            reminders: '++id, title, desc, meetingTime, remindTime, status'
+        });
+
+        // 2. Tab switching logic ekata 'reminders' add karanna
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+            document.getElementById('app-' + tab).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('bg-primary', 'text-white');
+                b.classList.add('text-slate-600');
+            });
+
+            if (tab === 'reminders') renderReminders();
+            // ... (Old switching logic)
+        }
+
+        // 3. REMINDER LOGIC
+        async function addReminder() {
+            const title = document.getElementById('remTitle').value;
+            const date = document.getElementById('remDate').value;
+            const time = document.getElementById('remTime').value;
+            const desc = document.getElementById('remDesc').value;
+            const offset = parseInt(document.getElementById('remOffset').value);
+
+            if (!title || !date || !time) return Swal.fire('Ado!', 'Details serama dapan!', 'warning');
+
+            const meetingDateTime = new Date(`${date}T${time}`);
+            const remindDateTime = new Date(meetingDateTime.getTime() - (offset * 60000));
+
+            await db2.reminders.add({
+                title, desc,
+                meetingTime: meetingDateTime.getTime(),
+                remindTime: remindDateTime.getTime(),
+                status: 'pending'
+            });
+
+            // Clear inputs
+            document.getElementById('remTitle').value = '';
+            renderReminders();
+            Swal.fire({ title: 'Reminder Set!', icon: 'success', toast: true, position: 'top-end', timer: 2000 });
+        }
+
+        // Browser eka open karapu gaman permission ahanawa
+        document.addEventListener('DOMContentLoaded', () => {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        console.log("Notification permission granted!");
+                    }
+                });
+            }
+        });
+
+        async function renderReminders() {
+            const list = document.getElementById('reminders-list');
+            const items = await db2.reminders.toArray();
+            list.innerHTML = '';
+
+            items.forEach(rem => {
+                const d = document.createElement('div');
+                const isMissed = rem.remindTime < Date.now() && rem.status === 'pending';
+                d.className = `card bg-base-100 shadow-xl border-l-8 ${rem.status === 'done' ? 'border-success' : 'border-accent'} p-5`;
+                d.innerHTML = `
+            <div class="flex justify-between">
+                <h3 class="font-black text-lg">${rem.title}</h3>
+                <button onclick="deleteReminder(${rem.id})" class="text-error font-bold">×</button>
+            </div>
+            <p class="text-xs opacity-60 mb-3">${rem.desc}</p>
+            <div class="bg-slate-50 p-2 rounded-xl text-[11px] font-bold">
+                <div>📅 Date: ${new Date(rem.meetingTime).toLocaleDateString()}</div>
+                <div>⏰ Time: ${new Date(rem.meetingTime).toLocaleTimeString()}</div>
+            </div>
+            <div class="mt-4 badge ${rem.status === 'done' ? 'badge-success' : 'badge-warning'} font-bold">
+                ${rem.status === 'done' ? 'Notified' : 'Waiting...'}
+            </div>
+        `;
+                list.appendChild(d);
+            });
+        }
+
+        async function deleteReminder(id) {
+            await db2.reminders.delete(id);
+            renderReminders();
+        }
+
+        // 1. Browser Notification Permission Illima (App eka load weddima ahanawa)
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        // 2. BACKGROUND REMINDER CHECKER (Updated with Push Notifications)
+        setInterval(async () => {
+            try {
+                const now = Date.now();
+                const reminders = await db2.reminders.where('status').equals('pending').toArray();
+
+                for (const rem of reminders) {
+                    // Meaka setInterval eka athule danna test karanna
+                    console.log("Next Reminder at: " + new Date(rem.remindTime).toLocaleTimeString());
+                    if (now >= rem.remindTime) {
+                        // Status eka update karanawa notification eka ekaparak enna
+                        await db2.reminders.update(rem.id, { status: 'done' });
+
+                        // Browser Push Notification එක යැවීම
+                        if (Notification.permission === "granted") {
+                            const notification = new Notification("🔔 ZMPLY REMINDER", {
+                                body: `Meeting: ${rem.title}\nStarts at: ${new Date(rem.meetingTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/311/311074.png' // Podi bell icon ekak
+                            });
+
+                            // Notification eka click kalama app ekata enna
+                            notification.onclick = () => {
+                                window.focus();
+                                switchTab('reminders');
+                            };
+                        }
+
+                        // Ekatama SweetAlert ekath pennamu (App eka issarahama thiyenawa nam lesi wenna)
+                        Swal.fire({
+                            title: '🔔 MEETING REMINDER!',
+                            text: rem.title,
+                            icon: 'info',
+                            confirmButtonText: 'Hade Hade',
+                            confirmButtonColor: '#570df8'
+                        });
+
+                        renderReminders();
+                    }
+                }
+            } catch (err) {
+                console.error("Notification error:", err);
+            }
+        }, 5000);
+    </script>
+</body>
+
+>>>>>>> b2e3eda1972ae95df26adec9c908df7ff077527d
+</html>
