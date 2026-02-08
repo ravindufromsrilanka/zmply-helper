@@ -68,8 +68,8 @@
                     </div>
                 </div>
                 <h3 class="font-bold text-sm">Guest User</h3>
-                <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2">Login with
-                    Google</button>
+                <button onclick="loginWithGoogle()"
+                    class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
             </div>
 
             <nav class="flex-1 overflow-y-auto">
@@ -99,6 +99,7 @@
         </aside>
 
         <main class="flex-1 p-6 lg:p-12">
+
             <div class="ad-slot w-full h-20 rounded-2xl mb-8">TOP BANNER AD (Responsive AdSense Slot)</div>
 
             <section id="app-pricing" class="tab-content">
@@ -197,10 +198,15 @@
                 </div>
                 <div id="reminders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
+
+            <section id="app-pricing" class="tab-content">
+                <h2 class="text-3xl font-black text-slate-800 mb-8">Pricing coming here...</h2>
+            </section>
         </main>
     </div>
 
     <script>
+
         // --- DB SETUP ---
         const db = new Dexie("ZmplyProDB");
         db.version(1).stores({ tasks: '++id, status, subTasks', notes: '++id, title, content, date', reminders: '++id, title, remindTime, status' });
@@ -221,13 +227,155 @@
 
         function initQuill() { quill = new Quill('#editor-container', { theme: 'snow', modules: { toolbar: [[{ header: [1, 2, false] }], ['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']] } }); }
 
-        // --- TASKS ---
-        async function addTask() { const t = document.getElementById('taskTitle').value; if (!t) return; await db.tasks.add({ title: t, status: 'todo', subTasks: [] }); document.getElementById('taskTitle').value = ''; renderTasks(); }
-        async function renderTasks() {
-            const all = await db.tasks.toArray();['todo', 'in-progress', 'completed'].forEach(c => document.getElementById(c).innerHTML = '');
-            all.forEach(task => { const card = document.createElement('div'); card.dataset.id = task.id; card.className = "sticky-note bg-white p-4 rounded-xl shadow-sm border-t-4 " + (task.status === 'todo' ? 'border-error' : (task.status === 'in-progress' ? 'border-warning' : 'border-success')); card.innerHTML = `<div class="flex justify-between items-start font-bold text-sm">${task.title} <button onclick="deleteTask(${task.id})" class="text-error">×</button></div>`; document.getElementById(task.status).appendChild(card); });
+
+        // --- TASK SYSTEM ---
+        async function addTask() {
+            const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+            const t = document.getElementById('taskTitle').value;
+            if (!t) return;
+
+            // Task count එක ගන්නවා
+            const count = await db.tasks.count();
+
+            // Log වෙලා නැත්නම් හෝ Pro නැත්නම් limit එක check කරනවා
+            if (!user && count >= 10) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Task Limit Reached',
+                    text: 'Free version supports up to 10 tasks. Upgrade to PRO for unlimited tasks!',
+                    showCancelButton: true,
+                    confirmButtonText: 'View Pricing',
+                    confirmButtonColor: '#641ae6'
+                }).then((result) => {
+                    if (result.isConfirmed) switchTab('pricing');
+                });
+                return;
+            }
+
+            await db.tasks.add({ title: t, status: 'todo', subTasks: [] });
+            document.getElementById('taskTitle').value = '';
+            renderTasks();
         }
+
+        // 1. Drag & Drop initialize karana kalla wenama function ekakata gaththa
+        function initializeSortable() {
+            ['todo', 'in-progress', 'completed'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                // Parana sortable instance thiyenwa nam eka ain karanna (Reset)
+                if (Sortable.get(el)) Sortable.get(el).destroy();
+
+                new Sortable(el, {
+                    group: 'tasks',
+                    animation: 200,
+                    onEnd: async (e) => {
+                        const taskId = parseInt(e.item.dataset.id);
+                        const newStatus = e.to.id;
+                        const isAllDone = e.item.dataset.allDone === 'true';
+
+                        if (newStatus === 'completed' && !isAllDone) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Hold on!',
+                                text: 'Please complete all sub-tasks before moving to Completed.',
+                                confirmButtonColor: '#641ae6'
+                            });
+                            renderTasks();
+                            return;
+                        }
+
+                        await db.tasks.update(taskId, { status: newStatus });
+                        renderTasks();
+                    }
+                });
+            });
+        }
+
+        async function renderTasks() {
+            const all = await db.tasks.toArray();
+            const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+
+            ['todo', 'in-progress', 'completed'].forEach(c => {
+                const el = document.getElementById(c);
+                if (el) el.innerHTML = '';
+            });
+
+            all.forEach(task => {
+                const card = document.createElement('div');
+                card.dataset.id = task.id;
+
+                // Logic: User log වෙලා නැත්නම් එයාට move කරන්න දෙන්න (allDone = true)
+                // නැත්නම් sub-tasks ඔක්කොම ඉවරද බලන්න
+                const allDone = !user ? true : (task.subTasks && task.subTasks.length > 0 && task.subTasks.every(st => st.completed));
+                card.dataset.allDone = allDone;
+
+                card.className = "sticky-note bg-white p-4 rounded-xl shadow-sm border-t-4 " + (task.status === 'todo' ? 'border-error' : (task.status === 'in-progress' ? 'border-warning' : 'border-success'));
+
+                let subTaskUI = "";
+                if (user) {
+                    subTaskUI = `
+                        <div id="subtasks-${task.id}" class="space-y-2 mb-3">
+                            ${(task.subTasks || []).map((st, index) => `
+                                <div class="flex items-center gap-2 text-[14px] font-bold bg-slate-50 p-2 rounded border border-slate-100">
+                                    <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleSubTask(${task.id}, ${index})" class="checkbox checkbox-sm checkbox-primary">
+                                    <span class="${st.completed ? 'line-through decoration-primary decoration-[3px] text-slate-600' : 'text-slate-800'}">${st.text}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex gap-1">
+                            <input type="text" id="input-${task.id}" placeholder="Sub-task..." class="input input-sm input-bordered w-full font-semibold">
+                            <button onclick="addSubTask(${task.id})" class="btn btn-sm btn-primary text-white font-bold">+</button>
+                        </div>
+                    `;
+                } else {
+                    // Click කළාම විතරක් පේන simple message එක
+                    subTaskUI = `
+                        <details class="group mt-2">
+                            <summary class="list-none flex justify-between items-center cursor-pointer text-[12px] font-bold text-slate-400 hover:text-primary transition-all">
+                                <span>🔒 Sub-tasks</span>
+                                <span class="group-open:rotate-180 transition-transform">▼</span>
+                            </summary>
+                            <div class="bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 mt-2 text-center">
+                                <p class="text-[10px] font-bold text-slate-500 mb-1">PRO FEATURE</p>
+                                <button onclick="switchTab('pricing')" class="btn btn-xs btn-outline btn-primary border-2 font-black">UNLOCK NOW</button>
+                            </div>
+                        </details>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start font-bold text-sm mb-3">
+                        ${task.title} 
+                        <button onclick="deleteTask(${task.id})" class="text-error font-black">×</button>
+                    </div>
+                    ${subTaskUI}
+                `;
+                document.getElementById(task.status).appendChild(card);
+            });
+
+            initializeSortable();
+        }
+
+        async function addSubTask(taskId) {
+            const input = document.getElementById(`input-${taskId}`);
+            if (!input.value) return;
+            const task = await db.tasks.get(taskId);
+            task.subTasks.push({ text: input.value, completed: false });
+            await db.tasks.put(task);
+            renderTasks();
+        }
+
+        async function toggleSubTask(taskId, index) {
+            const task = await db.tasks.get(taskId);
+            task.subTasks[index].completed = !task.subTasks[index].completed;
+            await db.tasks.put(task);
+            renderTasks();
+        }
+
         async function deleteTask(id) { await db.tasks.delete(id); renderTasks(); }
+
+        document.addEventListener('DOMContentLoaded', renderTasks);
 
         // --- NOTES ---
         async function saveNote() { const title = document.getElementById('noteTitle').value; if (!title) return; await db.notes.add({ title, content: quill.root.innerHTML, date: new Date().toLocaleString() }); document.getElementById('noteTitle').value = ''; quill.setContents([]); renderNotes(); }
@@ -247,15 +395,13 @@
         ['todo', 'in-progress', 'completed'].forEach(id => { new Sortable(document.getElementById(id), { group: 'tasks', animation: 200, onEnd: async (e) => { await db.tasks.update(parseInt(e.item.dataset.id), { status: e.to.id }); renderTasks(); } }); });
 
         document.addEventListener('DOMContentLoaded', () => switchTab('task'));
+
     </script>
 
     <script src="config.js"></script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -264,9 +410,9 @@
         window.loginWithGoogle = async () => {
             try {
                 await signInWithPopup(auth, provider);
-                Swal.fire({ title: 'Welcome!', text: 'You are now a PRO member!', icon: 'success', timer: 2000 });
             } catch (error) {
-                Swal.fire('Login Failed', 'Please check your Firebase Auth settings.', 'error');
+                console.error(error);
+                Swal.fire('Login Failed', 'Check authorized domains in Firebase.', 'error');
             }
         };
 
@@ -278,7 +424,7 @@
                 userArea.innerHTML = `
                     <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
                     <h3 class="font-bold text-sm">${user.displayName}</h3>
-                    <p class="text-[9px] text-primary font-black mb-2 uppercase tracking-widest">PRO MEMBER</p>
+                    <p class="text-[9px] text-primary font-black mb-2 uppercase">PRO MEMBER</p>
                     <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full">Logout</button>
                 `;
             } else {
@@ -288,6 +434,7 @@
                     <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
                 `;
             }
+            renderTasks();
         });
     </script>
 </body>
