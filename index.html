@@ -249,19 +249,13 @@
         document.addEventListener('DOMContentLoaded', () => switchTab('task'));
     </script>
 
+    <script src="config.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPqRaDKDT01TGpfzUcEJvfXoQq4bSujNI",
-            authDomain: "zmply-pro.firebaseapp.com",
-            projectId: "zmply-pro",
-            storageBucket: "zmply-pro.firebasestorage.app",
-            messagingSenderId: "567607135632",
-            appId: "1:567607135632:web:ecb7d61ad576c282523715",
-            measurementId: "G-LLWCD6TNVB"
-        };
+
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
