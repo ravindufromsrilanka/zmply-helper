@@ -54,14 +54,22 @@
 <body class="bg-slate-50">
 
     <div class="flex flex-col md:flex-row min-h-screen">
+
         <aside class="w-full md:w-72 bg-white shadow-2xl p-6 flex flex-col border-r border-slate-200 z-50">
             <div class="mb-8 text-center">
                 <h1 class="text-3xl font-black text-primary italic tracking-tighter uppercase">ZMPLY <span
                         class="text-secondary">PRO</span></h1>
-                <div class="badge badge-outline badge-xs opacity-50 font-bold uppercase">V 2.0 GLOBAL</div>
+                <div class="badge badge-outline badge-xs opacity-50 font-bold">V 2.0 GLOBAL</div>
             </div>
 
             <div id="user-profile-area" class="bg-slate-100 rounded-2xl p-4 mb-6 text-center border border-slate-200">
+                <div class="avatar placeholder mb-2">
+                    <div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span>
+                    </div>
+                </div>
+                <h3 class="font-bold text-sm">Guest User</h3>
+                <button onclick="loginWithGoogle()"
+                    class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
             </div>
 
             <nav class="flex-1 overflow-y-auto">
@@ -80,30 +88,70 @@
                             Features</button></li>
                 </ul>
             </nav>
+
+            <div class="ad-slot h-40 rounded-2xl mt-6 mb-4">ADVERTISEMENT<br>(300 x 250)</div>
+
+            <div class="text-[10px] font-bold opacity-30 flex justify-around border-t pt-4">
+                <a href="#" class="hover:underline">Privacy</a>
+                <a href="#" class="hover:underline">Terms</a>
+                <a href="#" class="hover:underline">Support</a>
+            </div>
         </aside>
 
         <main class="flex-1 p-6 lg:p-12">
+
+            <div class="ad-slot w-full h-20 rounded-2xl mb-8">TOP BANNER AD (Responsive AdSense Slot)</div>
+
+            <section id="app-pricing" class="tab-content">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">Scale Your Productivity</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                        <div class="card bg-white border-2 border-slate-200 p-8 shadow-sm">
+                            <h3 class="text-xl font-bold mb-2">Basic</h3>
+                            <div class="text-4xl font-black mb-6">$0</div>
+                            <ul class="text-left space-y-3 mb-8 text-sm">
+                                <li>✅ Local Storage</li>
+                                <li>✅ Basic Tasks & Notes</li>
+                                <li class="text-slate-300">❌ WhatsApp Alerts</li>
+                            </ul>
+                            <button class="btn btn-outline btn-disabled">Current Plan</button>
+                        </div>
+                        <div class="card bg-white border-4 border-primary p-8 shadow-2xl relative">
+                            <div class="badge badge-primary absolute -top-3 right-5 font-bold">BEST VALUE</div>
+                            <h3 class="text-xl font-bold mb-2 text-primary">Pro Business</h3>
+                            <div class="text-4xl font-black mb-6">$4.99</div>
+                            <ul class="text-left space-y-3 mb-8 text-sm">
+                                <li>🚀 <b>Cloud Sync:</b> Access anywhere</li>
+                                <li>📱 <b>WhatsApp Alerts:</b> Direct to phone</li>
+                                <li>🚫 <b>Zero Ads:</b> Clean experience</li>
+                            </ul>
+                            <button class="btn btn-primary text-white font-bold">GET PRO NOW</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section id="app-task" class="tab-content active">
                 <h2 class="text-3xl font-black text-slate-800 mb-8">Task Tracker</h2>
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <input type="text" id="taskTitle" placeholder="Task Name"
                             class="input input-bordered w-full font-bold" />
-                        <button onclick="addTask()" class="btn btn-primary w-full font-black text-white uppercase">Add
-                            Task</button>
+                        <input type="date" id="dateInput" class="input input-bordered w-full" />
                     </div>
+                    <button onclick="addTask()" class="btn btn-primary w-full font-black text-white">ADD TASK</button>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-slate-100 p-4 rounded-2xl">
-                        <h3 class="font-black mb-4 text-error uppercase text-xs tracking-widest">📌 To-Do</h3>
+                        <h3 class="font-black mb-4 text-error">📌 To-Do</h3>
                         <div id="todo" class="column flex flex-col gap-4"></div>
                     </div>
                     <div class="bg-slate-100 p-4 rounded-2xl">
-                        <h3 class="font-black mb-4 text-warning uppercase text-xs tracking-widest">⏳ In Progress</h3>
+                        <h3 class="font-black mb-4 text-warning">⏳ In Progress</h3>
                         <div id="in-progress" class="column flex flex-col gap-4"></div>
                     </div>
                     <div class="bg-slate-100 p-4 rounded-2xl">
-                        <h3 class="font-black mb-4 text-success uppercase text-xs tracking-widest">✅ Completed</h3>
+                        <h3 class="font-black mb-4 text-success">✅ Completed</h3>
                         <div id="completed" class="column flex flex-col gap-4"></div>
                     </div>
                 </div>
@@ -112,8 +160,7 @@
             <section id="app-notes" class="tab-content">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-3xl font-black text-slate-800">Zmply Notes</h2>
-                    <button onclick="saveNote()" class="btn btn-secondary text-white font-bold px-8 shadow-lg">SAVE
-                        NOTE</button>
+                    <button onclick="saveNote()" class="btn btn-secondary text-white font-bold px-8">SAVE NOTE</button>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div class="lg:col-span-3">
@@ -129,7 +176,7 @@
             </section>
 
             <section id="app-reminders" class="tab-content">
-                <h2 class="text-3xl font-black text-slate-800 mb-8">Smart Reminders</h2>
+                <h2 class="text-3xl font-black text-slate-800 mb-8">Reminders</h2>
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <input type="text" id="remTitle" placeholder="Meeting Title"
@@ -138,52 +185,32 @@
                                 class="input input-bordered w-full" /><input type="time" id="remTime"
                                 class="input input-bordered w-full" /></div>
                     </div>
-                    <button onclick="addReminder()"
-                        class="btn btn-accent w-full font-black text-white shadow-lg uppercase">Set Reminder</button>
+                    <div class="bg-slate-50 p-4 rounded-2xl mb-4 text-sm font-bold">
+                        Remind me before:
+                        <select id="remOffset" class="select select-bordered select-sm ml-2">
+                            <option value="15">15 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="60">1 Hour</option>
+                        </select>
+                    </div>
+                    <button onclick="addReminder()" class="btn btn-accent w-full font-black text-white">SET
+                        REMINDER</button>
                 </div>
                 <div id="reminders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
 
             <section id="app-pricing" class="tab-content">
-                <div class="max-w-4xl mx-auto text-center py-10">
-                    <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">Scale Your Productivity</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-                        <div class="card bg-white border-2 border-slate-200 p-8 shadow-sm">
-                            <h3 class="text-xl font-bold mb-2">Basic</h3>
-                            <div class="text-4xl font-black mb-6">$0</div>
-                            <ul class="text-left space-y-3 mb-8 text-sm opacity-70">
-                                <li>✅ Up to 10 Tasks</li>
-                                <li>❌ No Custom Sorting</li>
-                                <li>❌ No Cloud Sync</li>
-                            </ul>
-                            <button class="btn btn-outline btn-disabled">Current Plan</button>
-                        </div>
-                        <div class="card bg-white border-4 border-primary p-8 shadow-2xl relative">
-                            <div class="badge badge-primary absolute -top-3 right-5 font-bold uppercase">Best Value
-                            </div>
-                            <h3 class="text-xl font-bold mb-2 text-primary">PRO BUSINESS</h3>
-                            <div class="text-4xl font-black mb-6">$4.99</div>
-                            <ul class="text-left space-y-3 mb-8 text-sm">
-                                <li>🚀 <b>Unlimited Tasks</b></li>
-                                <li>🔄 <b>Cloud Sync:</b> Access anywhere</li>
-                                <li>🎯 <b>Priority Sorting</b></li>
-                            </ul>
-                            <button onclick="loginWithGoogle()"
-                                class="btn btn-primary text-white font-bold w-full">UPGRADE TO PRO</button>
-                        </div>
-                    </div>
-                </div>
+                <h2 class="text-3xl font-black text-slate-800 mb-8">Pricing coming here...</h2>
             </section>
         </main>
     </div>
 
     <script>
-        // --- DATABASE ---
+
+        // --- DB SETUP ---
         const db = new Dexie("ZmplyProDB");
         db.version(1).stores({ tasks: '++id, status, subTasks', notes: '++id, title, content, date', reminders: '++id, title, remindTime, status' });
-
         let quill;
-        function initQuill() { if (!quill) quill = new Quill('#editor-container', { theme: 'snow', modules: { toolbar: [[{ header: [1, 2, false] }], ['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']] } }); }
 
         // --- TAB SYSTEM ---
         function switchTab(tab) {
@@ -192,21 +219,36 @@
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('bg-primary', 'text-white'); b.classList.add('text-slate-600'); });
             const activeBtn = document.getElementById('btn-' + tab);
             if (activeBtn) { activeBtn.classList.remove('text-slate-600'); activeBtn.classList.add('bg-primary', 'text-white'); }
-
+            if (tab === 'notes' && !quill) initQuill();
+            if (tab === 'notes') renderNotes();
             if (tab === 'task') renderTasks();
-            if (tab === 'notes') { initQuill(); renderNotes(); }
             if (tab === 'reminders') renderReminders();
         }
+
+        function initQuill() { quill = new Quill('#editor-container', { theme: 'snow', modules: { toolbar: [[{ header: [1, 2, false] }], ['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']] } }); }
+
 
         // --- TASK SYSTEM ---
         async function addTask() {
             const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
             const t = document.getElementById('taskTitle').value;
             if (!t) return;
+
+            // Task count එක ගන්නවා
             const count = await db.tasks.count();
 
+            // Log වෙලා නැත්නම් හෝ Pro නැත්නම් limit එක check කරනවා
             if (!user && count >= 10) {
-                Swal.fire({ icon: 'info', title: 'Task Limit Reached', text: 'Free version supports up to 10 tasks. Upgrade to PRO!', showCancelButton: true, confirmButtonText: 'View Pricing' }).then((r) => { if (r.isConfirmed) switchTab('pricing'); });
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Task Limit Reached',
+                    text: 'Free version supports up to 10 tasks. Upgrade to PRO for unlimited tasks!',
+                    showCancelButton: true,
+                    confirmButtonText: 'View Pricing',
+                    confirmButtonColor: '#641ae6'
+                }).then((result) => {
+                    if (result.isConfirmed) switchTab('pricing');
+                });
                 return;
             }
 
@@ -215,95 +257,145 @@
             renderTasks();
         }
 
+        // 1. Drag & Drop initialize karana kalla wenama function ekakata gaththa
+        function initializeSortable() {
+            ['todo', 'in-progress', 'completed'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                // Parana sortable instance thiyenwa nam eka ain karanna (Reset)
+                if (Sortable.get(el)) Sortable.get(el).destroy();
+
+                new Sortable(el, {
+                    group: 'tasks',
+                    animation: 200,
+                    onEnd: async (e) => {
+                        const taskId = parseInt(e.item.dataset.id);
+                        const newStatus = e.to.id;
+                        const isAllDone = e.item.dataset.allDone === 'true';
+
+                        if (newStatus === 'completed' && !isAllDone) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Hold on!',
+                                text: 'Please complete all sub-tasks before moving to Completed.',
+                                confirmButtonColor: '#641ae6'
+                            });
+                            renderTasks();
+                            return;
+                        }
+
+                        await db.tasks.update(taskId, { status: newStatus });
+                        renderTasks();
+                    }
+                });
+            });
+        }
+
         async function renderTasks() {
             const all = await db.tasks.toArray();
             const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
-            ['todo', 'in-progress', 'completed'].forEach(c => document.getElementById(c).innerHTML = '');
+
+            ['todo', 'in-progress', 'completed'].forEach(c => {
+                const el = document.getElementById(c);
+                if (el) el.innerHTML = '';
+            });
 
             all.forEach(task => {
                 const card = document.createElement('div');
                 card.dataset.id = task.id;
+
+                // Logic: User log වෙලා නැත්නම් එයාට move කරන්න දෙන්න (allDone = true)
+                // නැත්නම් sub-tasks ඔක්කොම ඉවරද බලන්න
                 const allDone = !user ? true : (task.subTasks && task.subTasks.length > 0 && task.subTasks.every(st => st.completed));
                 card.dataset.allDone = allDone;
+
                 card.className = "sticky-note bg-white p-4 rounded-xl shadow-sm border-t-4 " + (task.status === 'todo' ? 'border-error' : (task.status === 'in-progress' ? 'border-warning' : 'border-success'));
 
-                let subTaskUI = user ? `
-                    <div id="subtasks-${task.id}" class="space-y-2 mb-3">
-                        ${(task.subTasks || []).map((st, index) => `
-                            <div class="flex items-center gap-2 text-[14px] font-bold bg-slate-50 p-2 rounded border border-slate-100">
-                                <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleSubTask(${task.id}, ${index})" class="checkbox checkbox-sm checkbox-primary">
-                                <span class="${st.completed ? 'line-through decoration-primary decoration-[3px] text-slate-600' : 'text-slate-800'}">${st.text}</span>
+                let subTaskUI = "";
+                if (user) {
+                    subTaskUI = `
+                        <div id="subtasks-${task.id}" class="space-y-2 mb-3">
+                            ${(task.subTasks || []).map((st, index) => `
+                                <div class="flex items-center gap-2 text-[14px] font-bold bg-slate-50 p-2 rounded border border-slate-100">
+                                    <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleSubTask(${task.id}, ${index})" class="checkbox checkbox-sm checkbox-primary">
+                                    <span class="${st.completed ? 'line-through decoration-primary decoration-[3px] text-slate-600' : 'text-slate-800'}">${st.text}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex gap-1">
+                            <input type="text" id="input-${task.id}" placeholder="Sub-task..." class="input input-sm input-bordered w-full font-semibold">
+                            <button onclick="addSubTask(${task.id})" class="btn btn-sm btn-primary text-white font-bold">+</button>
+                        </div>
+                    `;
+                } else {
+                    // Click කළාම විතරක් පේන simple message එක
+                    subTaskUI = `
+                        <details class="group mt-2">
+                            <summary class="list-none flex justify-between items-center cursor-pointer text-[12px] font-bold text-slate-400 hover:text-primary transition-all">
+                                <span>🔒 Sub-tasks</span>
+                                <span class="group-open:rotate-180 transition-transform">▼</span>
+                            </summary>
+                            <div class="bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 mt-2 text-center">
+                                <p class="text-[10px] font-bold text-slate-500 mb-1">PRO FEATURE</p>
+                                <button onclick="switchTab('pricing')" class="btn btn-xs btn-outline btn-primary border-2 font-black">UNLOCK NOW</button>
                             </div>
-                        `).join('')}
-                    </div>
-                    <div class="flex gap-1">
-                        <input type="text" id="input-${task.id}" placeholder="Sub-task..." class="input input-sm input-bordered w-full font-semibold">
-                        <button onclick="addSubTask(${task.id})" class="btn btn-sm btn-primary text-white font-bold">+</button>
-                    </div>
-                ` : `<details class="group mt-2"><summary class="list-none flex justify-between items-center cursor-pointer text-[12px] font-bold text-slate-400 hover:text-primary transition-all"><span>🔒 Sub-tasks</span><span class="group-open:rotate-180 transition-transform">▼</span></summary><div class="bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 mt-2 text-center"><p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Pro Feature</p><button onclick="switchTab('pricing')" class="btn btn-xs btn-outline btn-primary font-black">Unlock</button></div></details>`;
+                        </details>
+                    `;
+                }
 
-                card.innerHTML = `<div class="flex justify-between items-start font-bold text-sm mb-3">${task.title} <button onclick="deleteTask(${task.id})" class="text-error font-black">×</button></div>${subTaskUI}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start font-bold text-sm mb-3">
+                        ${task.title} 
+                        <button onclick="deleteTask(${task.id})" class="text-error font-black">×</button>
+                    </div>
+                    ${subTaskUI}
+                `;
                 document.getElementById(task.status).appendChild(card);
             });
+
             initializeSortable();
         }
 
-        function initializeSortable() {
-            ['todo', 'in-progress', 'completed'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (Sortable.get(el)) Sortable.get(el).destroy();
-                    new Sortable(el, {
-                        group: 'tasks', animation: 200,
-                        onEnd: async (e) => {
-                            const taskId = parseInt(e.item.dataset.id);
-                            if (e.to.id === 'completed' && e.item.dataset.allDone !== 'true') {
-                                Swal.fire({ icon: 'warning', title: 'Hold on!', text: 'Complete all sub-tasks first!', confirmButtonColor: '#641ae6' });
-                                renderTasks(); return;
-                            }
-                            await db.tasks.update(taskId, { status: e.to.id });
-                            renderTasks();
-                        }
-                    });
-                }
-            });
+        async function addSubTask(taskId) {
+            const input = document.getElementById(`input-${taskId}`);
+            if (!input.value) return;
+            const task = await db.tasks.get(taskId);
+            task.subTasks.push({ text: input.value, completed: false });
+            await db.tasks.put(task);
+            renderTasks();
         }
 
-        async function addSubTask(taskId) { const input = document.getElementById(`input-${taskId}`); if (!input.value) return; const task = await db.tasks.get(taskId); task.subTasks.push({ text: input.value, completed: false }); await db.tasks.put(task); renderTasks(); }
-        async function toggleSubTask(taskId, index) { const task = await db.tasks.get(taskId); task.subTasks[index].completed = !task.subTasks[index].completed; await db.tasks.put(task); renderTasks(); }
+        async function toggleSubTask(taskId, index) {
+            const task = await db.tasks.get(taskId);
+            task.subTasks[index].completed = !task.subTasks[index].completed;
+            await db.tasks.put(task);
+            renderTasks();
+        }
+
         async function deleteTask(id) { await db.tasks.delete(id); renderTasks(); }
+
+        document.addEventListener('DOMContentLoaded', renderTasks);
 
         // --- NOTES ---
         async function saveNote() { const title = document.getElementById('noteTitle').value; if (!title) return; await db.notes.add({ title, content: quill.root.innerHTML, date: new Date().toLocaleString() }); document.getElementById('noteTitle').value = ''; quill.setContents([]); renderNotes(); }
-        async function renderNotes() { const notes = await db.notes.reverse().toArray(); const list = document.getElementById('notes-list'); list.innerHTML = ''; notes.forEach(n => { const d = document.createElement('div'); d.className = "bg-white p-3 rounded-xl shadow-sm border border-slate-200 cursor-pointer text-sm font-bold flex justify-between sticky-note"; d.innerHTML = `<span onclick="loadNote(${n.id})">${n.title}</span> <button onclick="deleteNote(${n.id})" class="text-error">×</button>`; list.appendChild(d); }); }
+        async function renderNotes() { const notes = await db.notes.reverse().toArray(); const list = document.getElementById('notes-list'); list.innerHTML = ''; notes.forEach(n => { const d = document.createElement('div'); d.className = "bg-white p-3 rounded-xl shadow-sm border border-slate-200 cursor-pointer text-sm font-bold flex justify-between"; d.innerHTML = `<span onclick="loadNote(${n.id})">${n.title}</span> <button onclick="deleteNote(${n.id})" class="text-error">×</button>`; list.appendChild(d); }); }
         async function loadNote(id) { const n = await db.notes.get(id); document.getElementById('noteTitle').value = n.title; quill.root.innerHTML = n.content; }
         async function deleteNote(id) { await db.notes.delete(id); renderNotes(); }
 
         // --- REMINDERS ---
-        async function addReminder() {
-            const title = document.getElementById('remTitle').value;
-            const date = document.getElementById('remDate').value;
-            const time = document.getElementById('remTime').value;
-            if (!title || !date || !time) return;
-            const mTime = new Date(`${date}T${time}`).getTime();
-            await db.reminders.add({ title, eventTime: mTime, remindTime: mTime, status: 'pending' });
-            renderReminders();
-        }
-        async function renderReminders() {
-            const items = await db.reminders.toArray();
-            const list = document.getElementById('reminders-list');
-            list.innerHTML = '';
-            items.forEach(rem => {
-                const d = document.createElement('div');
-                d.className = "card bg-white p-4 shadow-sm border-l-4 " + (rem.status === 'done' ? 'border-success' : 'border-accent');
-                d.innerHTML = `<h3 class="font-bold">${rem.title}</h3><p class="text-[10px] opacity-50 uppercase font-black">${new Date(rem.eventTime).toLocaleString()}</p>`;
-                list.appendChild(d);
-            });
-        }
+        async function addReminder() { const title = document.getElementById('remTitle').value; const date = document.getElementById('remDate').value; const time = document.getElementById('remTime').value; const offset = parseInt(document.getElementById('remOffset').value); if (!title || !date || !time) return; const mTime = new Date(`${date}T${time}`).getTime(); const rTime = mTime - (offset * 60000); await db.reminders.add({ title, meetingTime: mTime, remindTime: rTime, status: 'pending' }); renderReminders(); }
+        async function renderReminders() { const items = await db.reminders.toArray(); const list = document.getElementById('reminders-list'); list.innerHTML = ''; items.forEach(rem => { const d = document.createElement('div'); d.className = "card bg-white p-4 shadow-sm border-l-4 " + (rem.status === 'done' ? 'border-success' : 'border-accent'); d.innerHTML = `<h3 class="font-bold">${rem.title}</h3><p class="text-[10px] opacity-50">${new Date(rem.meetingTime).toLocaleString()}</p>`; list.appendChild(d); }); }
 
-        setInterval(async () => { const now = Date.now(); const pending = await db.reminders.where('status').equals('pending').toArray(); pending.forEach(async (rem) => { if (now >= rem.remindTime) { await db.reminders.update(rem.id, { status: 'done' }); Swal.fire({ title: 'Reminder!', text: rem.title, icon: 'info' }); renderReminders(); } }); }, 10000);
+        // --- NOTIFICATIONS ---
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        setInterval(async () => { const now = Date.now(); const pending = await db.reminders.where('status').equals('pending').toArray(); pending.forEach(async (rem) => { if (now >= rem.remindTime) { await db.reminders.update(rem.id, { status: 'done' }); if (Notification.permission === "granted") new Notification("🔔 ZMPLY REMINDER", { body: rem.title }); Swal.fire({ title: 'Reminder!', text: rem.title, icon: 'info' }); renderReminders(); } }); }, 5000);
+
+        // --- SORTABLE ---
+        ['todo', 'in-progress', 'completed'].forEach(id => { new Sortable(document.getElementById(id), { group: 'tasks', animation: 200, onEnd: async (e) => { await db.tasks.update(parseInt(e.item.dataset.id), { status: e.to.id }); renderTasks(); } }); });
 
         document.addEventListener('DOMContentLoaded', () => switchTab('task'));
+
     </script>
 
     <script src="config.js"></script>
@@ -316,20 +408,33 @@
         const provider = new GoogleAuthProvider();
 
         window.loginWithGoogle = async () => {
-            try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); }
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Login Failed', 'Check authorized domains in Firebase.', 'error');
+            }
         };
-        window.logoutUser = () => signOut(auth);
+
+        window.logoutUser = () => { signOut(auth); };
 
         onAuthStateChanged(auth, (user) => {
             const userArea = document.getElementById('user-profile-area');
             if (user) {
-                userArea.innerHTML = `<div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div><h3 class="font-bold text-sm">${user.displayName}</h3><p class="text-[9px] text-primary font-black uppercase">PRO MEMBER</p><button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full mt-2 font-black uppercase">Logout</button>`;
+                userArea.innerHTML = `
+                    <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
+                    <h3 class="font-bold text-sm">${user.displayName}</h3>
+                    <p class="text-[9px] text-primary font-black mb-2 uppercase">PRO MEMBER</p>
+                    <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full">Logout</button>
+                `;
             } else {
-                userArea.innerHTML = `<div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div><h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3><button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black uppercase">Login with Google</button>`;
+                userArea.innerHTML = `
+                    <div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div>
+                    <h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3>
+                    <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
+                `;
             }
-            if (typeof renderTasks === "function") renderTasks();
-            if (typeof renderNotes === "function") renderNotes();
-            if (typeof renderReminders === "function") renderReminders();
+            renderTasks();
         });
     </script>
 </body>
