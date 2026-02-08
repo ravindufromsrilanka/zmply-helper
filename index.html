@@ -403,23 +403,18 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase configuration eka config.js eken auto gannawa
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // Global access dima (Anith functions walata auth panna ganna)
-        window.auth = auth;
-
+        // ✅ Meka thamai mulyatama fix eka:
+        // Function eka window ekata attach kalama witharai HTML onclick ekata eka penne.
         window.loginWithGoogle = async () => {
             try {
-                // Popup eka block wenna puluwan browser eken, eka nisa meka user action ekakinma wenna ona
                 await signInWithPopup(auth, provider);
             } catch (e) {
                 console.error("Login Error:", e);
-                if (e.code === 'auth/popup-closed-by-user') {
-                    Swal.fire('Login Cancelled', 'Please complete the login process.', 'info');
-                }
+                Swal.fire('Login Failed', 'Check authorized domains in Firebase.', 'error');
             }
         };
 
@@ -440,10 +435,10 @@
                 <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>`;
             }
 
-            // Task Tracker, Notes saha Reminders kisima wenasak nathuwa refresh wenawa
-            renderTasks();
-            renderNotes();
-            renderReminders();
+            // Task Tracker, Notes saha Reminders refresh kirima
+            if (typeof renderTasks === "function") renderTasks();
+            if (typeof renderNotes === "function") renderNotes();
+            if (typeof renderReminders === "function") renderReminders();
         });
     </script>
 </body>
