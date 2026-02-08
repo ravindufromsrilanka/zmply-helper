@@ -407,12 +407,13 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // Menna meka script type="module" eka athule thiyenna ona
         window.loginWithGoogle = async () => {
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error(error);
-                Swal.fire('Login Failed', 'Please check Firebase authorized domains or popup settings.', 'error');
+                Swal.fire('Login Failed', 'Check authorized domains in Firebase.', 'error');
             }
         };
 
