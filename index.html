@@ -403,38 +403,47 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+        // Firebase configuration eka config.js eken auto gannawa
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // Global access dima (Anith functions walata auth panna ganna)
+        window.auth = auth;
+
         window.loginWithGoogle = async () => {
             try {
+                // Popup eka block wenna puluwan browser eken, eka nisa meka user action ekakinma wenna ona
                 await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Login Failed', 'Check authorized domains in Firebase.', 'error');
+            } catch (e) {
+                console.error("Login Error:", e);
+                if (e.code === 'auth/popup-closed-by-user') {
+                    Swal.fire('Login Cancelled', 'Please complete the login process.', 'info');
+                }
             }
         };
 
-        window.logoutUser = () => { signOut(auth); };
+        window.logoutUser = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
             const userArea = document.getElementById('user-profile-area');
             if (user) {
                 userArea.innerHTML = `
-                    <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
-                    <h3 class="font-bold text-sm">${user.displayName}</h3>
-                    <p class="text-[9px] text-primary font-black mb-2 uppercase">PRO MEMBER</p>
-                    <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full">Logout</button>
-                `;
+                <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
+                <h3 class="font-bold text-sm">${user.displayName}</h3>
+                <p class="text-[9px] text-primary font-black uppercase">PRO MEMBER</p>
+                <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full mt-2">Logout</button>`;
             } else {
                 userArea.innerHTML = `
-                    <div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div>
-                    <h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3>
-                    <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
-                `;
+                <div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div>
+                <h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3>
+                <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>`;
             }
+
+            // Task Tracker, Notes saha Reminders kisima wenasak nathuwa refresh wenawa
             renderTasks();
+            renderNotes();
+            renderReminders();
         });
     </script>
 </body>
