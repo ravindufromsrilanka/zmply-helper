@@ -108,7 +108,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
                         <div class="card bg-white border-2 border-slate-200 p-8 shadow-sm">
                             <h3 class="text-xl font-bold mb-2">Basic</h3>
-                            <div class="text-4xl font-black mb-6">Free</div>
+                            <div class="text-4xl font-black mb-6">$0</div>
                             <ul class="text-left space-y-3 mb-8 text-sm">
                                 <li>✅ Local Storage</li>
                                 <li>✅ Basic Tasks & Notes</li>
@@ -125,8 +125,7 @@
                                 <li>📱 <b>WhatsApp Alerts:</b> Direct to phone</li>
                                 <li>🚫 <b>Zero Ads:</b> Clean experience</li>
                             </ul>
-                            <button id="pro-upgrade-btn" class="btn btn-primary text-white font-bold w-full">UPGRADE TO
-                                PRO</button>
+                            <button class="btn btn-primary text-white font-bold">GET PRO NOW</button>
                         </div>
                     </div>
                 </div>
@@ -401,59 +400,38 @@
 
     <script src="config.js"></script>
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const handleLogin = async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Login Error:", error);
-                Swal.fire('Login Failed', 'Please check Firebase authorized domains.', 'error');
-            }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // 1. Kelinma Global define karanna mehema
+        window.loginWithGoogle = () => {
+            signInWithPopup(auth, provider).catch(e => console.error(e));
         };
 
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'google-login-btn' || e.target.id === 'pro-upgrade-btn') {
-                handleLogin();
-            }
+        window.logoutUser = () => { signOut(auth); };
 
-
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-            import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
-
-            // Menna meka script type="module" eka athule thiyenna ona
-            window.loginWithGoogle = async () => {
-                try {
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    console.error(error);
-                    Swal.fire('Login Failed', 'Check authorized domains in Firebase.', 'error');
-                }
-            };
-
-            window.logoutUser = () => { signOut(auth); };
-
-            onAuthStateChanged(auth, (user) => {
-                const userArea = document.getElementById('user-profile-area');
-                if (user) {
-                    userArea.innerHTML = `
+        onAuthStateChanged(auth, (user) => {
+            const userArea = document.getElementById('user-profile-area');
+            if (user) {
+                userArea.innerHTML = `
                     <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
                     <h3 class="font-bold text-sm">${user.displayName}</h3>
                     <p class="text-[9px] text-primary font-black mb-2 uppercase">PRO MEMBER</p>
                     <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full">Logout</button>
                 `;
-                } else {
-                    userArea.innerHTML = `
+            } else {
+                userArea.innerHTML = `
                     <div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div>
                     <h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3>
                     <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
                 `;
-                }
-                renderTasks();
-            });
+            }
+            renderTasks();
+        });
     </script>
 </body>
 
