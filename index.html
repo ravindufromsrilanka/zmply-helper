@@ -317,20 +317,24 @@
                         if (newStatus === 'completed') {
                             const task = await db.tasks.get(taskId);
 
-                            // Requirement: Sub-tasks aniwaryen thiyenna ona saha ewa okkoma complete wenna ona
+                            // Requirement: Sub-tasks thiyenawa nam witharak check karanna
                             const hasSubTasks = task.subTasks && task.subTasks.length > 0;
-                            const allSubTasksDone = hasSubTasks && task.subTasks.every(st => st.completed);
 
-                            if (!hasSubTasks || !allSubTasksDone) {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'Action Blocked',
-                                    text: 'You must complete ALL sub-tasks before moving this task to Completed!',
-                                    confirmButtonColor: '#f87272' // Error/Warning color
-                                });
-                                renderTasks(); // Reverse the move
-                                return;
+                            if (hasSubTasks) {
+                                const allSubTasksDone = task.subTasks.every(st => st.completed);
+
+                                if (!allSubTasksDone) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Action Blocked',
+                                        text: 'This task has sub-tasks. Please complete ALL of them before moving to Completed!',
+                                        confirmButtonColor: '#f87272'
+                                    });
+                                    renderTasks(); // Reverse the move
+                                    return;
+                                }
                             }
+                            // Sub-tasks naththan awulak na, kelinma completed ekata yanawa
                         }
                         await db.tasks.update(taskId, { status: newStatus });
                         renderTasks();
@@ -390,23 +394,28 @@
     </div>`;
 
                         card.innerHTML = `
-                    <div class="flex justify-between items-start gap-3 w-full">
-                        <div class="flex-1 min-w-0 h-auto">
-                            <div contenteditable="${isEditable}" onblur="updateTaskText(${task.id}, 'title', this.innerText)" 
-                                 class="font-black text-slate-900 outline-none break-words text-[15px] leading-tight p-1 rounded-md w-full">
-                                 ${task.title}
-                            </div>
-                            
-                            <div class="mt-3 ml-1 pl-3 border-l-2 border-slate-200 h-auto">
-                                <div id="desc-editor-${task.id}" class="text-[12px] text-slate-500 font-medium w-full" 
-                                     style="min-height: 20px; height: auto;">
-                                     ${task.description || ''}
-                                </div>
-                            </div>
-                        </div>
-                        <button onclick="deleteTask(${task.id})" class="text-error font-bold hover:scale-125 transition-transform text-xl px-1">×</button>
-                    </div>
-                    ${subTaskUI}`;
+    <div class="flex justify-between items-start gap-3 w-full">
+        <div class="drag-handle cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+        </div>
+
+        <div class="flex-1 min-w-0 h-auto">
+            <div contenteditable="${isEditable}" onblur="updateTaskText(${task.id}, 'title', this.innerText)" 
+                 class="font-black text-slate-900 outline-none break-words text-[15px] leading-tight p-1 rounded-md w-full h-auto">
+                 ${task.title}
+            </div>
+            
+            <div class="mt-3 ml-1 pl-3 border-l-2 border-slate-200 h-auto">
+                <div id="desc-editor-${task.id}" class="text-[12px] text-slate-500 font-medium w-full" 
+                     style="min-height: 20px; height: auto;">
+                     ${task.description || ''}
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="deleteTask(${task.id})" class="text-error font-bold hover:scale-125 transition-transform text-xl px-1">×</button>
+    </div>
+    ${subTaskUI}`;
 
                         col.appendChild(card);
 
