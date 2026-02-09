@@ -49,6 +49,23 @@
         .column {
             min-height: 300px;
         }
+
+        .placeholder-card {
+            border: 2px dashed #cbd5e1;
+            background: rgba(241, 245, 249, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            color: #94a3b8;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -135,36 +152,51 @@
             </section>
 
             <section id="app-task" class="tab-content active">
-                <div class="flex flex-col items-center mb-8">
-                    <h2 class="text-3xl font-black text-slate-800 mb-2 text-center">Task Tracker</h2>
-                    <div style="width: 280px; height: 140px; position: relative;">
-                        <canvas id="taskProgressChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
-                    <div class="flex flex-col gap-4 mb-4">
-                        <input type="text" id="taskTitle" placeholder="Task Name"
-                            class="input input-bordered w-full font-black text-lg" />
-                        <div id="task-editor-container"
-                            class="bg-slate-50 rounded-xl border border-slate-300 overflow-hidden">
-                            <div id="task-desc-editor" style="height: 100px; font-family: 'Inter', sans-serif;"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div
+                        class="lg:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center justify-center">
+                        <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-1">Task Progress</h2>
+                        <div style="width: 220px; height: 110px;">
+                            <canvas id="taskProgressChart"></canvas>
                         </div>
                     </div>
-                    <button onclick="addTask()" class="btn btn-primary w-full font-black text-white">ADD TASK</button>
+
+                    <div
+                        class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                        <h2 class="text-xl font-black text-slate-800 mb-4 uppercase">ZMPLY Task Tracker</h2>
+                        <div class="flex flex-col gap-3">
+                            <input type="text" id="taskTitle" placeholder="What needs to be done?"
+                                class="input input-bordered w-full font-bold" />
+                            <div id="task-editor-container"
+                                class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                                <div id="task-desc-editor" style="height: 80px;"></div>
+                            </div>
+                            <button onclick="addTask()" class="btn btn-primary font-black text-white">ADD TO
+                                LIST</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-slate-100 p-4 rounded-2xl">
-                        <h3 class="font-black mb-4 text-error">📌 To-Do</h3>
+                    <div>
+                        <h3
+                            class="font-black mb-4 flex items-center gap-2 text-error uppercase text-sm tracking-widest px-2">
+                            <span>🔴</span> To-Do
+                        </h3>
                         <div id="todo" class="column flex flex-col gap-4"></div>
                     </div>
-                    <div class="bg-slate-100 p-4 rounded-2xl">
-                        <h3 class="font-black mb-4 text-warning">⏳ In Progress</h3>
+                    <div>
+                        <h3
+                            class="font-black mb-4 flex items-center gap-2 text-warning uppercase text-sm tracking-widest px-2">
+                            <span>🟡</span> In Progress
+                        </h3>
                         <div id="in-progress" class="column flex flex-col gap-4"></div>
                     </div>
-                    <div class="bg-slate-100 p-4 rounded-2xl">
-                        <h3 class="font-black mb-4 text-success">✅ Completed</h3>
+                    <div>
+                        <h3
+                            class="font-black mb-4 flex items-center gap-2 text-success uppercase text-sm tracking-widest px-2">
+                            <span>🟢</span> Completed
+                        </h3>
                         <div id="completed" class="column flex flex-col gap-4"></div>
                     </div>
                 </div>
@@ -305,7 +337,14 @@
 
         async function renderTasks() {
             const all = await db.tasks.toArray();
-            const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+
+            // Auth object eka haraha user log wela datha balamu
+            let user = null;
+            try {
+                if (typeof auth !== 'undefined') {
+                    user = auth.currentUser;
+                }
+            } catch (e) { console.log("Auth not ready"); }
 
             // Columns clear kireema
             ['todo', 'in-progress', 'completed'].forEach(c => {
@@ -316,22 +355,18 @@
             all.forEach(task => {
                 const card = document.createElement('div');
                 card.dataset.id = task.id;
-
                 const isEditable = task.status !== 'completed';
 
-                // --- 🔒 SUB-TASK LOGIC & PRO FEATURE CHECK ---
-                // User log wela neththan move karanna puluwan (Free mode limitation)
-                // User log wela nam (Pro), sub-tasks okkoma iwara wenna ona "Completed" yanna
+                // Sub-task completion logic
                 const allDone = !user ? true : (task.subTasks && task.subTasks.length > 0 && task.subTasks.every(st => st.completed));
                 card.dataset.allDone = allDone;
 
-                card.className = "sticky-note bg-white p-4 rounded-2xl shadow-sm border-t-4 " +
+                card.className = "sticky-note bg-white p-4 rounded-2xl shadow-sm border-t-4 mb-4 " +
                     (task.status === 'todo' ? 'border-error' : (task.status === 'in-progress' ? 'border-warning' : 'border-success'));
 
-                // --- SUB-TASK UI (PRO & FREE MODES) ---
+                // --- SUB-TASK UI (PRO FEATURE) ---
                 let subTaskUI = "";
                 if (user) {
-                    // PRO USER: Sub-tasks add karanna saha edit karanna puluwan
                     subTaskUI = `
                 <div id="subtasks-${task.id}" class="space-y-1 mt-3">
                     ${(task.subTasks || []).map((st, index) => `
@@ -343,15 +378,9 @@
                             </span>
                         </div>
                     `).join('')}
-                </div>
-                ${isEditable ? `
-                <div class="flex gap-1 mt-2">
-                    <input type="text" id="input-${task.id}" placeholder="New sub-task..." class="input input-xs input-bordered w-full font-semibold">
-                    <button onclick="addSubTask(${task.id})" class="btn btn-xs btn-primary text-white font-bold">+</button>
-                </div>` : ''}
-            `;
+                    ${isEditable ? `<div class="flex gap-1 mt-2"><input type="text" id="input-${task.id}" placeholder="New sub-task..." class="input input-xs input-bordered w-full font-semibold"><button onclick="addSubTask(${task.id})" class="btn btn-xs btn-primary text-white font-bold">+</button></div>` : ''}
+                </div>`;
                 } else {
-                    // FREE USER: Sub-tasks lock wela thiyenne
                     subTaskUI = `
                 <details class="group mt-2">
                     <summary class="list-none flex justify-between items-center cursor-pointer text-[11px] font-bold text-slate-400 hover:text-primary transition-all">
@@ -361,11 +390,10 @@
                     <div class="bg-slate-50 p-2 rounded-lg border border-dashed border-slate-200 mt-2 text-center">
                         <button onclick="switchTab('pricing')" class="text-[10px] font-black text-primary hover:underline underline-offset-2">UPGRADE TO UNLOCK</button>
                     </div>
-                </details>
-            `;
+                </details>`;
                 }
 
-                // --- MAIN CARD UI (Fixed Spacing & Rich Text) ---
+                // --- CARD UI (WITH EDITING) ---
                 card.innerHTML = `
             <div class="flex justify-between items-start">
                 <div class="w-full">
@@ -373,35 +401,34 @@
                         class="font-black text-base outline-none focus:bg-slate-50 p-1 rounded text-slate-800 leading-none">
                         ${task.title}
                     </div>
-                    
-<div class="ql-editor p-0 mt-1 text-slate-500" 
-     style="font-size: 13px; line-height: 1.4; font-family: 'Inter', sans-serif; min-height: auto !important;">
-     ${task.description && task.description !== '<p><br></p>' ? task.description : ''}
-</div>
+                    <div contenteditable="${isEditable}" onblur="updateTaskText(${task.id}, 'description', this.innerHTML)"
+                         class="ql-editor p-0 mt-1 text-slate-500 outline-none focus:bg-slate-50 rounded" 
+                         style="font-size: 13px; line-height: 1.4; font-family: 'Inter', sans-serif; min-height: 5px !important;">
+                         ${task.description && task.description !== '<p><br></p>' ? task.description : ''}
+                    </div>
                 </div>
-                <button onclick="deleteTask(${task.id})" class="text-error font-black ml-2 opacity-30 hover:opacity-100">×</button>
+                <button onclick="deleteTask(${task.id})" class="text-error font-black ml-2 opacity-30 hover:opacity-100 text-lg">×</button>
             </div>
-            ${subTaskUI}
-        `;
+            ${subTaskUI}`;
+
                 document.getElementById(task.status).appendChild(card);
             });
 
             updateChart();
             initializeSortable();
-
         }
 
         let taskChart = null;
 
         async function updateChart() {
-            const allTasks = await db.tasks.toArray();
-            const total = allTasks.length;
-            const todoCount = allTasks.filter(t => t.status === 'todo').length;
-            const inProgressCount = allTasks.filter(t => t.status === 'in-progress').length;
-            const completedCount = allTasks.filter(t => t.status === 'completed').length;
-
-            // Percentage calculate kireema (Completed matha padasthanawa)
-            const percentage = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+            const all = await db.tasks.toArray();
+            const counts = {
+                todo: all.filter(t => t.status === 'todo').length,
+                progress: all.filter(t => t.status === 'in-progress').length,
+                done: all.filter(t => t.status === 'completed').length
+            };
+            const total = all.length;
+            const getP = (v) => total > 0 ? Math.round((v / total) * 100) : 0;
 
             const ctx = document.getElementById('taskProgressChart').getContext('2d');
             if (taskChart) taskChart.destroy();
@@ -409,9 +436,8 @@
             taskChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['To Do', 'In Progress', 'Done'],
                     datasets: [{
-                        data: [todoCount, inProgressCount, completedCount],
+                        data: [counts.todo, counts.progress, counts.done],
                         backgroundColor: ['#ff5861', '#fbbd23', '#00a96e'],
                         borderWidth: 0,
                         circumference: 180,
@@ -421,25 +447,45 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '60%', // Meken thama chart eka mahath karanne (adu karana tharamata mahath wenawa)
+                    cutout: '60%', // Poddak chart eka nihada kala labels walata ida ganna
                     plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true }
+                        tooltip: { enabled: true },
+                        legend: { display: false }
                     }
                 },
                 plugins: [{
-                    id: 'centerText',
+                    id: 'textInside',
                     afterDraw: (chart) => {
-                        const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
+                        const { ctx, width, height } = chart;
                         ctx.save();
-                        ctx.font = 'bold 20px Inter, sans-serif';
-                        ctx.fillStyle = '#1e293b';
                         ctx.textAlign = 'center';
-                        // Center percentage text
-                        ctx.fillText(percentage + '%', width / 2, height / 1.15);
-                        ctx.font = 'bold 10px Inter, sans-serif';
+                        ctx.textBaseline = 'middle';
+
+                        // 1. Arc eka athule thiyena percentages (To-Do, In Progress etc.)
+                        ctx.font = 'bold 9px sans-serif';
+                        ctx.fillStyle = '#fff';
+                        const dataset = chart.getDatasetMeta(0);
+                        dataset.data.forEach((arc, i) => {
+                            const val = chart.data.datasets[0].data[i];
+                            if (val > 0) {
+                                const { x, y } = arc.tooltipPosition();
+                                ctx.fillText(getP(val) + '%', x, y);
+                            }
+                        });
+
+                        // 2. Meda thiyena Loku Percentage eka (Completed %)
+                        // Meke height eka poddak udaata gaththa (height - 45)
+                        ctx.font = 'bold 28px Inter, sans-serif';
+                        ctx.fillStyle = '#1e293b';
+                        ctx.fillText(getP(counts.done) + '%', width / 2, height - 30);
+
+                        // 3. "COMPLETED" kiyana Label eka
+                        // Spacing wadi kala (height - 18) saha kapenne nathi wenna adjustment kala
+                        ctx.font = 'bold 11px Inter, sans-serif';
                         ctx.fillStyle = '#94a3b8';
-                        ctx.fillText('DONE', width / 2, height / 1.02);
+                        ctx.letterSpacing = "1px";
+                        ctx.fillText('COMPLETED', width / 2, height - 5);
+
                         ctx.restore();
                     }
                 }]
@@ -510,9 +556,6 @@
         // --- NOTIFICATIONS ---
         if (Notification.permission !== "granted") Notification.requestPermission();
         setInterval(async () => { const now = Date.now(); const pending = await db.reminders.where('status').equals('pending').toArray(); pending.forEach(async (rem) => { if (now >= rem.remindTime) { await db.reminders.update(rem.id, { status: 'done' }); if (Notification.permission === "granted") new Notification("🔔 ZMPLY REMINDER", { body: rem.title }); Swal.fire({ title: 'Reminder!', text: rem.title, icon: 'info' }); renderReminders(); } }); }, 5000);
-
-        // --- SORTABLE ---
-        ['todo', 'in-progress', 'completed'].forEach(id => { new Sortable(document.getElementById(id), { group: 'tasks', animation: 200, onEnd: async (e) => { await db.tasks.update(parseInt(e.item.dataset.id), { status: e.to.id }); renderTasks(); } }); });
 
         document.addEventListener('DOMContentLoaded', () => switchTab('task'));
 
