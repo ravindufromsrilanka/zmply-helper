@@ -57,9 +57,9 @@
 
         <aside class="w-full md:w-72 bg-white shadow-2xl p-6 flex flex-col border-r border-slate-200 z-50">
             <div class="mb-8 text-center">
-                <h1 class="text-3xl font-black text-primary italic tracking-tighter uppercase">ZMPLY <span
-                        class="text-secondary">PRO</span></h1>
-                <div class="badge badge-outline badge-xs opacity-50 font-bold">V 1.0.0 GLOBAL</div>
+                <h1 class="text-3xl font-black text-primary italic tracking-tighter uppercase">Zmply <span
+                        class="text-secondary">Helper</span></h1>
+                <div class="badge badge-outline badge-xs opacity-50 font-bold">To Increase your Productivity</div>
             </div>
 
             <div id="user-profile-area" class="bg-slate-100 rounded-2xl p-4 mb-6 text-center border border-slate-200">
@@ -75,13 +75,14 @@
             <nav class="flex-1 overflow-y-auto">
                 <ul class="menu p-0 gap-2">
                     <li><button id="btn-task" onclick="switchTab('task')"
-                            class="nav-btn p-4 rounded-2xl font-bold bg-primary text-white w-full text-left">📋 Task
+                            class="nav-btn p-4 rounded-2xl font-bold bg-primary text-white w-full text-left">📋 Zmply
+                            Task
                             Tracker</button></li>
                     <li><button id="btn-notes" onclick="switchTab('notes')"
                             class="nav-btn p-4 rounded-2xl font-bold text-slate-600 w-full text-left">📝 Zmply
                             Notes</button></li>
                     <li><button id="btn-reminders" onclick="switchTab('reminders')"
-                            class="nav-btn p-4 rounded-2xl font-bold text-slate-600 w-full text-left">🔔
+                            class="nav-btn p-4 rounded-2xl font-bold text-slate-600 w-full text-left">🔔 Zmply
                             Reminders</button></li>
                     <li><button id="btn-pricing" onclick="switchTab('pricing')"
                             class="nav-btn p-4 rounded-2xl font-bold text-warning italic w-full text-left">⭐ PRO
@@ -121,6 +122,7 @@
                             <h3 class="text-xl font-bold mb-2 text-primary">Pro Business</h3>
                             <div class="text-4xl font-black mb-6">$4.99</div>
                             <ul class="text-left space-y-3 mb-8 text-sm">
+                                <li>📝 <b>Sub Tasks:</b> Add Sub tasks</li>
                                 <li>🚀 <b>Cloud Sync:</b> Access anywhere</li>
                                 <li>📱 <b>WhatsApp Alerts:</b> Direct to phone</li>
                                 <li>🚫 <b>Zero Ads:</b> Clean experience</li>
@@ -403,35 +405,39 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        // window.firebaseConfig thiyeda kiyala check karala initialize karanna
+        if (window.firebaseConfig) {
+            const app = initializeApp(window.firebaseConfig);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
 
-        // 1. Kelinma Global define karanna mehema
-        window.loginWithGoogle = () => {
-            signInWithPopup(auth, provider).catch(e => console.error(e));
-        };
+            window.loginWithGoogle = () => {
+                signInWithPopup(auth, provider).catch(e => console.error(e));
+            };
 
-        window.logoutUser = () => { signOut(auth); };
+            window.logoutUser = () => { signOut(auth); };
 
-        onAuthStateChanged(auth, (user) => {
-            const userArea = document.getElementById('user-profile-area');
-            if (user) {
-                userArea.innerHTML = `
+            onAuthStateChanged(auth, (user) => {
+                const userArea = document.getElementById('user-profile-area');
+                if (user) {
+                    userArea.innerHTML = `
                     <div class="avatar online mb-2"><div class="w-12 rounded-full border-2 border-primary"><img src="${user.photoURL}" /></div></div>
                     <h3 class="font-bold text-sm">${user.displayName}</h3>
                     <p class="text-[9px] text-primary font-black mb-2 uppercase">PRO MEMBER</p>
                     <button onclick="logoutUser()" class="btn btn-xs btn-outline btn-error w-full">Logout</button>
                 `;
-            } else {
-                userArea.innerHTML = `
+                } else {
+                    userArea.innerHTML = `
                     <div class="avatar placeholder mb-2"><div class="bg-neutral text-neutral-content rounded-full w-12 text-xl font-bold"><span>U</span></div></div>
                     <h3 class="font-bold text-sm text-slate-400 italic">Guest Mode</h3>
                     <button onclick="loginWithGoogle()" class="btn btn-xs btn-primary w-full text-white mt-2 font-black">Login with Google</button>
                 `;
-            }
-            renderTasks();
-        });
+                }
+                if (typeof renderTasks === "function") renderTasks();
+            });
+        } else {
+            console.error("Firebase configuration missing! Check config.js loading.");
+        }
     </script>
 </body>
 
