@@ -226,10 +226,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <input type="text" id="remTitle" placeholder="Meeting Title"
                             class="input input-bordered w-full font-bold" />
-                        <div class="flex gap-2"><input type="date" id="remDate"
-                                class="input input-bordered w-full" /><input type="time" id="remTime"
-                                class="input input-bordered w-full" /></div>
+                        <div class="flex gap-2">
+                            <input type="date" id="remDate" class="input input-bordered w-full" />
+                            <input type="time" id="remTime" class="input input-bordered w-full" />
+                        </div>
                     </div>
+                    <textarea id="remDesc" placeholder="Description (Optional)"
+                        class="textarea textarea-bordered w-full mb-4 font-medium" rows="2"></textarea>
+
                     <div class="bg-slate-50 p-4 rounded-2xl mb-4 text-sm font-bold">
                         Remind me before:
                         <select id="remOffset" class="select select-bordered select-sm ml-2">
@@ -238,8 +242,8 @@
                             <option value="60">1 Hour</option>
                         </select>
                     </div>
-                    <button onclick="addReminder()" class="btn btn-accent w-full font-black text-white">SET
-                        REMINDER</button>
+                    <button id="rem-submit-btn" onclick="addReminder()"
+                        class="btn btn-accent w-full font-black text-white">SET REMINDER</button>
                 </div>
                 <div id="reminders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
@@ -575,9 +579,131 @@
         async function deleteNote(id) { await db.notes.delete(id); renderNotes(); }
 
         // --- REMINDERS ---
-        async function addReminder() { const title = document.getElementById('remTitle').value; const date = document.getElementById('remDate').value; const time = document.getElementById('remTime').value; const offset = parseInt(document.getElementById('remOffset').value); if (!title || !date || !time) return; const mTime = new Date(`${date}T${time}`).getTime(); const rTime = mTime - (offset * 60000); await db.reminders.add({ title, meetingTime: mTime, remindTime: rTime, status: 'pending' }); renderReminders(); }
-        async function renderReminders() { const items = await db.reminders.toArray(); const list = document.getElementById('reminders-list'); list.innerHTML = ''; items.forEach(rem => { const d = document.createElement('div'); d.className = "card bg-white p-4 shadow-sm border-l-4 " + (rem.status === 'done' ? 'border-success' : 'border-accent'); d.innerHTML = `<h3 class="font-bold">${rem.title}</h3><p class="text-[10px] opacity-50">${new Date(rem.meetingTime).toLocaleString()}</p>`; list.appendChild(d); }); }
+        // 1. Add Reminder (Supports Description)
+        async function addReminder() {
+            const title = document.getElementById('remTitle').value;
+            const desc = document.getElementById('remDesc').value;
+            const date = document.getElementById('remDate').value;
+            const time = document.getElementById('remTime').value;
+            const offset = parseInt(document.getElementById('remOffset').value);
 
+            if (!title || !date || !time) {
+                Swal.fire('Error', 'Please fill in Title, Date, and Time', 'error');
+                return;
+            }
+
+            const mTime = new Date(`${date}T${time}`).getTime();
+            const rTime = mTime - (offset * 60000);
+
+            await db.reminders.add({
+                title,
+                description: desc,
+                meetingTime: mTime,
+                remindTime: rTime,
+                status: 'pending',
+                offset: offset // For editing purpose
+            });
+
+            // Reset fields
+            document.getElementById('remTitle').value = '';
+            document.getElementById('remDesc').value = '';
+            renderReminders();
+        }
+
+        // 2. Render Reminders (With Edit, Delete, and Description)
+        async function renderReminders() {
+            // 1. Database එකෙන් reminders ඔක්කොම ගන්නවා
+            const items = await db.reminders.toArray();
+            const list = document.getElementById('reminders-list');
+            list.innerHTML = '';
+
+            // 2. Sorting Logic එක (Date > Time > Added Order)
+            items.sort((a, b) => {
+                // පළවෙනි පියවර: Meeting Time (Date + Time) එක සැසඳීම
+                if (a.meetingTime !== b.meetingTime) {
+                    return a.meetingTime - b.meetingTime; // අඩු වෙලාව/දිනය තියෙන එක මුලට එනවා
+                }
+
+                // දෙවැනි පියවර: වෙලාවත් සමාන නම්, ඉස්සෙල්ලාම add කරපු එක (ID එක අනුව) මුලට දානවා
+                return a.id - b.id;
+            });
+
+            // 3. පිළිවෙළ කරපු ලැයිස්තුව Render කිරීම
+            items.forEach(rem => {
+                const d = document.createElement('div');
+                const isDone = rem.status === 'done';
+
+                d.className = `card bg-white p-5 shadow-sm border-l-4 transition-all hover:shadow-md ${isDone ? 'border-success opacity-70' : 'border-accent'}`;
+
+                d.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-black text-slate-800 leading-tight break-words">${rem.title}</h3>
+                </div>
+                <div class="flex gap-1 ml-2">
+                    ${!isDone ? `<button onclick="editReminder(${rem.id})" class="text-slate-400 hover:text-primary text-xs font-bold">EDIT</button>` : ''}
+                    <button onclick="deleteReminder(${rem.id})" class="text-slate-300 hover:text-error text-lg leading-none ml-1">×</button>
+                </div>
+            </div>
+            
+            ${rem.description ? `<p class="text-[12px] text-slate-500 mb-3 break-words">${rem.description}</p>` : ''}
+            
+            <div class="flex items-center gap-2 mt-auto pt-3 border-t border-slate-50">
+                <span class="text-[10px] font-black bg-slate-100 px-2 py-1 rounded text-slate-500">
+                    📅 ${new Date(rem.meetingTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+                ${isDone ? '<span class="badge badge-success badge-xs font-bold text-[9px] text-white">NOTIFIED</span>' : ''}
+            </div>
+        `;
+                list.appendChild(d);
+            });
+        }
+
+        // 3. Delete Reminder
+        async function deleteReminder(id) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f87272',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                await db.reminders.delete(id);
+                renderReminders();
+            }
+        }
+
+        // 4. Edit Reminder (Loads data back to form)
+        async function editReminder(id) {
+            const rem = await db.reminders.get(id);
+            if (!rem) return;
+
+            // Load to form
+            document.getElementById('remTitle').value = rem.title;
+            document.getElementById('remDesc').value = rem.description || '';
+
+            const dt = new Date(rem.meetingTime);
+            document.getElementById('remDate').value = dt.toISOString().split('T')[0];
+            document.getElementById('remTime').value = dt.toTimeString().slice(0, 5);
+            document.getElementById('remOffset').value = rem.offset || "15";
+
+            // Delete the old one so the user can re-save (or you can update the logic to update existing)
+            // For simplicity in this suite, we'll let them save as a new or update. 
+            // Let's change the button to "UPDATE" temporarily:
+            const btn = document.getElementById('rem-submit-btn');
+            btn.innerText = "UPDATE & SAVE";
+            btn.onclick = async () => {
+                await db.reminders.delete(id); // Remove old version
+                await addReminder(); // Add new version
+                btn.innerText = "SET REMINDER";
+                btn.onclick = addReminder;
+            };
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         // --- NOTIFICATIONS ---
         if (Notification.permission !== "granted") Notification.requestPermission();
         setInterval(async () => { const now = Date.now(); const pending = await db.reminders.where('status').equals('pending').toArray(); pending.forEach(async (rem) => { if (now >= rem.remindTime) { await db.reminders.update(rem.id, { status: 'done' }); if (Notification.permission === "granted") new Notification("🔔 ZMPLY REMINDER", { body: rem.title }); Swal.fire({ title: 'Reminder!', text: rem.title, icon: 'info' }); renderReminders(); } }); }, 5000);
