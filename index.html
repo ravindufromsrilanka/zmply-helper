@@ -164,6 +164,19 @@
                     <div
                         class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-center">
                         <h2 class="text-xl font-black text-slate-800 mb-4 uppercase text-center">ZMPLY Task Tracker</h2>
+                        <div
+                            class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <button onclick="changeDate(-1)"
+                                    class="btn btn-circle btn-ghost btn-sm text-primary">❮</button>
+                                <input type="date" id="viewDate" onchange="renderTasks()"
+                                    class="input input-bordered input-sm font-black text-primary" />
+                                <button onclick="changeDate(1)"
+                                    class="btn btn-circle btn-ghost btn-sm text-primary">❯</button>
+                            </div>
+                            <div class="badge badge-primary p-4 font-black text-[10px] tracking-widest uppercase"
+                                id="history-label">Today's Board</div>
+                        </div>
                         <div class="flex flex-col gap-3">
                             <input type="text" id="taskTitle" placeholder="What needs to be done?"
                                 class="input input-bordered w-full font-bold" />
@@ -257,11 +270,22 @@
     <script>
 
         const db = new Dexie("ZmplyProDB");
-        db.version(2).stores({
-            tasks: '++id, title, description, status, subTasks',
+        db.version(3).stores({
+            tasks: '++id, title, description, status, subTasks, createdAt, completedAt', // Aluth fields
             notes: '++id, title, content, date',
-            reminders: '++id, title, remindTime, status'
+            reminders: '++id, title, meetingTime, remindTime, status, description, offset'
         }); let quill;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Date picker eka ada dawasata set kirima
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('viewDate');
+            if (dateInput) dateInput.value = today;
+
+            // 2. Anith editor saha tabs initialize kirima
+            initTaskEditor();
+            switchTab('task');
+        });
 
         // --- TAB SYSTEM ---
         function switchTab(tab) {
@@ -282,8 +306,8 @@
         // --- TASK SYSTEM ---
         async function addTask() {
             const t = document.getElementById('taskTitle').value;
-            // Description eka gannawa, eth eka thiyena eka aniwarya naha
             const d = taskEditor.root.innerHTML === '<p><br></p>' ? '' : taskEditor.root.innerHTML;
+            const today = new Date().toISOString().split('T')[0]; // Ada dawasa gannawa
 
             if (!t) {
                 Swal.fire('Error', 'Please enter a Task Name', 'error');
@@ -294,10 +318,11 @@
                 title: t,
                 description: d,
                 status: 'todo',
-                subTasks: []
+                subTasks: [],
+                createdAt: today, // Hadapu dawasa save karanawa
+                completedAt: null
             });
 
-            // Reset fields
             document.getElementById('taskTitle').value = '';
             taskEditor.setContents([]);
             renderTasks();
@@ -314,33 +339,40 @@
                     group: 'tasks',
                     animation: 250,
                     draggable: '.sticky-note',
+                    handle: '.drag-handle',
                     onEnd: async (e) => {
                         const taskId = parseInt(e.item.dataset.id);
                         const newStatus = e.to.id;
+                        const viewDate = document.getElementById('viewDate').value;
 
+                        // 1. Validation Logic
                         if (newStatus === 'completed') {
                             const task = await db.tasks.get(taskId);
-
-                            // Requirement: Sub-tasks thiyenawa nam witharak check karanna
                             const hasSubTasks = task.subTasks && task.subTasks.length > 0;
-
-                            if (hasSubTasks) {
-                                const allSubTasksDone = task.subTasks.every(st => st.completed);
-
-                                if (!allSubTasksDone) {
-                                    Swal.fire({
-                                        icon: 'warning',
-                                        title: 'Action Blocked',
-                                        text: 'This task has sub-tasks. Please complete ALL of them before moving to Completed!',
-                                        confirmButtonColor: '#f87272'
-                                    });
-                                    renderTasks(); // Reverse the move
-                                    return;
-                                }
+                            if (hasSubTasks && !task.subTasks.every(st => st.completed)) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Action Blocked',
+                                    text: 'Please complete ALL sub-tasks!',
+                                    confirmButtonColor: '#f87272'
+                                });
+                                renderTasks();
+                                return;
                             }
-                            // Sub-tasks naththan awulak na, kelinma completed ekata yanawa
                         }
-                        await db.tasks.update(taskId, { status: newStatus });
+
+                        // 2. Database Update (Me kalla thamai wadagath)
+                        let updateData = { status: newStatus };
+                        if (newStatus === 'completed') {
+                            updateData.completedAt = viewDate; // Completed column ekata dapu date eka save wenawa
+                        } else {
+                            updateData.completedAt = null; // Aye back kaloth date eka ain wenawa
+                        }
+
+                        // Database ekata data tika liyala iwara wenakan inna (await)
+                        await db.tasks.update(taskId, updateData);
+
+                        // Iwara unama board eka refresh karanna
                         renderTasks();
                     }
                 });
@@ -348,90 +380,77 @@
         }
 
         async function renderTasks() {
+            // Date picker eka nathi unoth ada dawasa gannawa
+            const dateInput = document.getElementById('viewDate');
+            const selectedDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+
+            const historyLabel = document.getElementById('history-label');
+            if (historyLabel) {
+                historyLabel.innerText = (selectedDate === today) ? "Today's Board" : `History: ${selectedDate}`;
+            }
+
             const all = await db.tasks.toArray();
+
+            // Filtering Logic එක තහවුරු කිරීම
+            const filteredTasks = all.filter(task => {
+                // Task eka completed nam, eka iwara karapu dawasema witharak pennanna
+                if (task.status === 'completed') {
+                    return task.completedAt === selectedDate;
+                }
+                // To-Do hari In-Progress nam:
+                // 1. Eka hadala thiyenne select karapu dawasata kalin hari e dawasema wenna ona
+                // 2. Eka iwara karala thiyenne e dawasata passe wenna ona (nathnam thama iwara naththa wenna ona)
+                const isCreatedBeforeOrOn = task.createdAt <= selectedDate;
+                const isNotFinishedYet = !task.completedAt || task.completedAt > selectedDate;
+
+                return isCreatedBeforeOrOn && isNotFinishedYet;
+            });
 
             ['todo', 'in-progress', 'completed'].forEach(status => {
                 const col = document.getElementById(status);
+                if (!col) return;
                 col.innerHTML = '';
-                const filtered = all.filter(t => t.status === status);
 
-                if (filtered.length === 0) {
+                const list = filteredTasks.filter(t => t.status === status);
+
+                if (list.length === 0) {
                     col.innerHTML = `<div class="placeholder-card"><span>NO TASKS HERE</span></div>`;
                 } else {
-                    filtered.forEach(task => {
+                    list.forEach(task => {
                         const isEditable = task.status !== 'completed';
-                        const canCheckSubTask = task.status === 'in-progress';
-
                         const card = document.createElement('div');
                         card.dataset.id = task.id;
                         card.className = `sticky-note bg-white p-5 rounded-2xl shadow-sm border-t-4 mb-4 flex flex-col h-auto w-full overflow-hidden transition-all hover:shadow-md ${status === 'todo' ? 'border-error' : status === 'in-progress' ? 'border-warning' : 'border-success'}`;
 
-                        let subTaskUI = `
-    <div class="mt-4 space-y-2 border-t border-slate-50 pt-3">
-        ${(task.subTasks || []).map((st, i) => {
-                            // Logic: Todo wala check karanna ba, Completed wala uncheck karanna ba
-                            const isTodo = task.status === 'todo';
-                            const isDone = task.status === 'completed';
-                            const checkboxDisabled = isTodo || isDone;
-
-                            return `
-            <div class="group flex items-center gap-2 text-[11px] font-bold bg-slate-50/80 p-2 rounded-lg border border-slate-100">
-                <input type="checkbox" 
-                    ${st.completed ? 'checked' : ''} 
-                    ${checkboxDisabled ? 'disabled' : ''} 
-                    onchange="toggleSubTask(${task.id}, ${i})" 
-                    class="checkbox checkbox-xs checkbox-primary ${checkboxDisabled ? 'opacity-30 cursor-not-allowed' : ''}">
-                
-                <span contenteditable="${isEditable}" 
-                      onblur="updateSubTaskText(${task.id}, ${i}, this.innerText)" 
-                      class="${st.completed ? 'line-through text-black font-black opacity-100' : 'text-slate-600'} outline-none break-all w-full h-auto">
-                      ${st.text}
-                </span>
-                ${!isDone ? `<button onclick="deleteSubTask(${task.id}, ${i})" class="text-slate-300 hover:text-error opacity-0 group-hover:opacity-100 transition-all font-bold px-1">×</button>` : ''}
-            </div>`;
+                        // --- Task Card UI එක (Oyaage original code eka mehemama danna) ---
+                        let subTaskUI = `<div class="mt-4 space-y-2 border-t border-slate-50 pt-3">
+                    ${(task.subTasks || []).map((st, i) => {
+                            const checkboxDisabled = task.status === 'todo' || task.status === 'completed';
+                            return `<div class="group flex items-center gap-2 text-[11px] font-bold bg-slate-50/80 p-2 rounded-lg border border-slate-100">
+                            <input type="checkbox" ${st.completed ? 'checked' : ''} ${checkboxDisabled ? 'disabled' : ''} onchange="toggleSubTask(${task.id}, ${i})" class="checkbox checkbox-xs checkbox-primary">
+                            <span contenteditable="${isEditable}" onblur="updateSubTaskText(${task.id}, ${i}, this.innerText)" class="${st.completed ? 'line-through text-black font-black' : 'text-slate-600'} outline-none w-full">${st.text}</span>
+                        </div>`;
                         }).join('')}
-        ${isEditable ? `
-        <div class="flex gap-1 mt-2">
-            <input type="text" id="input-${task.id}" class="input input-xs input-bordered w-full font-bold h-8 text-[11px]" placeholder="Add sub-task...">
-            <button onclick="addSubTask(${task.id})" class="btn btn-xs btn-primary font-black h-8">+</button>
-        </div>` : ''}
-    </div>`;
+                    ${isEditable ? `<div class="flex gap-1 mt-2"><input type="text" id="input-${task.id}" class="input input-xs input-bordered w-full h-8 text-[11px]" placeholder="Add sub-task..."><button onclick="addSubTask(${task.id})" class="btn btn-xs btn-primary">+</button></div>` : ''}
+                </div>`;
 
                         card.innerHTML = `
-    <div class="flex justify-between items-start gap-3 w-full">
-        <div class="drag-handle cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 mt-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-        </div>
-
-        <div class="flex-1 min-w-0 h-auto">
-            <div contenteditable="${isEditable}" onblur="updateTaskText(${task.id}, 'title', this.innerText)" 
-                 class="font-black text-slate-900 outline-none break-words text-[15px] leading-tight p-1 rounded-md w-full h-auto">
-                 ${task.title}
-            </div>
-            
-            <div class="mt-3 ml-1 pl-3 border-l-2 border-slate-200 h-auto">
-                <div id="desc-editor-${task.id}" class="text-[12px] text-slate-500 font-medium w-full" 
-                     style="min-height: 20px; height: auto;">
-                     ${task.description || ''}
-                </div>
-            </div>
-        </div>
-        
-        <button onclick="deleteTask(${task.id})" class="text-error font-bold hover:scale-125 transition-transform text-xl px-1">×</button>
-    </div>
-    ${subTaskUI}`;
+                <div class="flex justify-between items-start gap-3 w-full">
+                    <div class="drag-handle cursor-grab text-slate-300 mt-1">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div contenteditable="${isEditable}" onblur="updateTaskText(${task.id}, 'title', this.innerText)" class="font-black text-slate-900 outline-none text-[15px]">${task.title}</div>
+                        <div class="mt-2 pl-3 border-l-2 border-slate-200"><div id="desc-editor-${task.id}" class="text-[12px] text-slate-500">${task.description || ''}</div></div>
+                    </div>
+                    <button onclick="deleteTask(${task.id})" class="text-error font-bold text-xl">×</button>
+                </div>${subTaskUI}`;
 
                         col.appendChild(card);
-
-                        // Initialize Quill editor for each description
                         if (isEditable) {
-                            const quill = new Quill(`#desc-editor-${task.id}`, {
-                                theme: 'snow',
-                                modules: { toolbar: false }
-                            });
-                            quill.on('text-change', () => {
-                                updateTaskText(task.id, 'description', quill.root.innerHTML);
-                            });
+                            const q = new Quill(`#desc-editor-${task.id}`, { theme: 'snow', modules: { toolbar: false } });
+                            q.on('text-change', () => updateTaskText(task.id, 'description', q.root.innerHTML));
                         }
                     });
                 }
@@ -711,7 +730,21 @@
         document.addEventListener('DOMContentLoaded', () => switchTab('task'));
 
     </script>
+    <script>
+        // Date picker eka ada dawasata set kirima saha date change logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('viewDate').value = today;
+        });
 
+        function changeDate(days) {
+            const picker = document.getElementById('viewDate');
+            let current = new Date(picker.value);
+            current.setDate(current.getDate() + days);
+            picker.value = current.toISOString().split('T')[0];
+            renderTasks();
+        }
+    </script>
     <script src="config.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
